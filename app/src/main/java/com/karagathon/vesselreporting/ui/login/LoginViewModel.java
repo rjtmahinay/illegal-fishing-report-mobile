@@ -1,15 +1,15 @@
 package com.karagathon.vesselreporting.ui.login;
 
+import android.util.Patterns;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import android.util.Patterns;
-
+import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.data.LoginRepository;
 import com.karagathon.vesselreporting.data.Result;
 import com.karagathon.vesselreporting.data.model.LoggedInUser;
-import com.karagathon.vesselreporting.R;
 
 public class LoginViewModel extends ViewModel {
 
@@ -65,6 +65,6 @@ public class LoginViewModel extends ViewModel {
 
     // A placeholder password validation check
     private boolean isPasswordValid(String password) {
-        return password != null && password.trim().length() > 5;
+        return password != null;
     }
 }
