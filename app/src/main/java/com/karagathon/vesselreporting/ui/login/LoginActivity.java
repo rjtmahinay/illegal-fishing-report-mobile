@@ -1,17 +1,8 @@
 package com.karagathon.vesselreporting.ui.login;
 
 import android.app.Activity;
-
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
-
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -23,10 +14,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+
 import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.report.ReportActivity;
-import com.karagathon.vesselreporting.ui.login.LoginViewModel;
-import com.karagathon.vesselreporting.ui.login.LoginViewModelFactory;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -74,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
 //                    Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                     Intent intent = new Intent(LoginActivity.this, ReportActivity.class);
                     startActivity(intent);
-//                    updateUiWithUser(loginResult.getSuccess());
+                    finish();
                 }
                 setResult(Activity.RESULT_OK);
 
@@ -124,11 +119,6 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void updateUiWithUser(LoggedInUserView model) {
-        String welcome = getString(R.string.welcome) + model.getDisplayName();
-        // TODO : initiate successful logged in experience
-        Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
-    }
 
     private void showLoginFailed(@StringRes Integer errorString) {
         Toast.makeText(getApplicationContext(), errorString, Toast.LENGTH_SHORT).show();

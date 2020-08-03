@@ -2,44 +2,140 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/boxInsetLayout"
+    android:layout_centerVertical="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".report.ReportActivity">
 
-    <Button
-        android:id="@+id/upload"
-        android:layout_width="271dp"
-        android:layout_height="36dp"
+    <!--    <LinearLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_alignParentBottom="true"-->
+    <!--        android:orientation="horizontal">-->
+
+    <!--        android:layout_width="164dp"-->
+    <!--        android:layout_height="33dp"-->
+    <!--        android:layout_alignParentBottom="true"-->
+    <!--        android:layout_centerVertical="true"-->
+    <!--        android:layout_marginBottom="237dp"-->
+
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="237dp"
-        android:text="Upload"
-        android:textSize="12.5dp" />
+        android:layout_marginBottom="300dp">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="16dp"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/date"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:ems="10"
+                    android:hint="Date"
+                    android:inputType="date"
+                    android:textSize="15dp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="10dp" />
+
+                <EditText
+                    android:id="@+id/reportDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="Description"
+                    android:inputType="textMultiLine"
+                    android:lines="4"
+                    android:orientation="vertical"
+                    android:textSize="15dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="200dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="16dp"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/video"
+                    android:layout_width="142dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Record Video"
+                    android:textAlignment="center"
+                    android:textSize="12.5dp" />
+
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="16dp"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/photo"
+                    android:layout_width="131dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:text="Take Photo"
+                    android:textSize="12.5dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/submit"
-        android:layout_width="254dp"
-        android:layout_height="38dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
         android:layout_marginBottom="30dp"
         android:text="Submit"
         android:textSize="12.5dp" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <EditText
-        android:id="@+id/editTextTextPersonName2"
-        android:layout_width="345dp"
-        android:layout_height="64dp"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="300dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Name" />
-
 </RelativeLayout>
