@@ -13,16 +13,26 @@ import com.amplifyframework.AmplifyException;
 import com.amplifyframework.auth.cognito.AWSCognitoAuthPlugin;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.storage.s3.AWSS3StoragePlugin;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.karagathon.vesselreporting.R;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Map;
 
 public class DetailsActivity extends AppCompatActivity {
 
+    private static final String UPLOAD_URL = "http://192.168.0.109:1331/upload";
     private EditText dateText;
     private DatePickerDialog picker;
-    String absoluteFilePath;
+    private String absoluteFilePath;
     private String currentFileName;
 
     @Override
@@ -67,7 +77,7 @@ public class DetailsActivity extends AppCompatActivity {
 
         File f = new File(absoluteFilePath);
 
-        Amplify.Storage.uploadFile(currentFileName, f, result -> Log.i("MyAmplifyApp", "Successfully uploaded: " + result.getKey()), storageFailure -> Log.e("MyAmplifyApp", "Upload failed", storageFailure));
+//        Amplify.Storage.uploadFile(currentFileName, f, result -> Log.i("MyAmplifyApp", "Successfully uploaded: " + result.getKey()), storageFailure -> Log.e("MyAmplifyApp", "Upload failed", storageFailure));
 
     }
 
@@ -82,5 +92,26 @@ public class DetailsActivity extends AppCompatActivity {
         Log.i("On Destroy", "On Destroy");
         File f = new File(absoluteFilePath);
         f.delete();
+    }
+
+    private void uploadFile(Map data) {
+
+        JSONObject jsonRequest = null;
+        Request request = new JsonObjectRequest(Request.Method.POST, UPLOAD_URL, new JSONObject(data), new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                //empty
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //empty
+            }
+        });
+
+        RequestQueue rQueue = Volley.newRequestQueue(getApplicationContext());
+        rQueue.add(request);
     }
 }

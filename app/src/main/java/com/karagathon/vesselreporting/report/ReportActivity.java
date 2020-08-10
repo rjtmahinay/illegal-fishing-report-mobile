@@ -1,12 +1,18 @@
 package com.karagathon.vesselreporting.report;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
@@ -19,36 +25,119 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.constant.FileType;
-
-import org.json.JSONObject;
 
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 public class ReportActivity extends AppCompatActivity {
-    private static final int PERMISSION_REQUEST_CODE = 1;
-    private static final String UPLOAD_URL = "http://192.168.0.109:1331/upload";
+    private static final int MEDIA_REQUEST_CODE = 1;
+    private static final int GALLERY_REQUEST_CODE = 2;
     private static final String DETAILS_URL = "http://192.168.0.109:1331/reportDetails";
-    private Button photoCaptureButton, videoCaptureButton, submitButton;
     private int flag;
     private String absoluteFilePath;
-    private boolean isImage;
+    private Button photoCaptureButton, videoCaptureButton, submitButton, galleryButton;
     private LocalDateTime dateTime = LocalDateTime.now();
     private DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
     private String currentFileName;
+    private List<String> galleryDataPaths;
+    private String galleryRealPath;
+
+    public static String getPathFromUri(final Context context, final Uri uri) {
+
+
+        if (isExternalStorageDocument(uri)) {
+            Log.i("Inside External Storage", "Inside External Storage");
+            final String docId = DocumentsContract.getDocumentId(uri);
+            final String[] split = docId.split(":");
+            final String type = split[0];
+
+            if ("primary".equalsIgnoreCase(type)) {
+                return Environment.getExternalStorageDirectory() + "/" + split[1];
+            }
+        } else if (isDownloadsDocument(uri)) {
+            Log.i("Inside Download Storage", "Inside Download Storage");
+            final String id = DocumentsContract.getDocumentId(uri);
+            final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.parseLong(id));
+
+            return getDataColumn(context, contentUri, null, null);
+        } else if (isMediaDocument(uri)) {
+            Log.i("Inside Media ", "Inside Media ");
+            final String docId = DocumentsContract.getDocumentId(uri);
+            final String[] split = docId.split(":");
+            final String type = split[0];
+
+            Uri contentUri = null;
+            if ("image".equals(type)) {
+                contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            } else if ("video".equals(type)) {
+                contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+            } else if ("audio".equals(type)) {
+                contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            }
+
+            final String selection = "_id=?";
+            final String[] selectionArgs = new String[]{
+                    split[1]
+            };
+            return getDataColumn(context, contentUri, selection, selectionArgs);
+        }
+
+        // Media Store
+        if ("content".equalsIgnoreCase(uri.getScheme())) {
+            Log.i("Inside Media Store", "Inside Media Store");
+            return getDataColumn(context, uri, null, null);
+        }
+        //File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            Log.i("Inside File", "Inside File");
+            return uri.getPath();
+        }
+        return null;
+    }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
+    }
+
+    public static String getDataColumn(Context context, Uri uri, String selection,
+                                       String[] selectionArgs) {
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {
+                column
+        };
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int column_index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(column_index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
+
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,19 +148,24 @@ public class ReportActivity extends AppCompatActivity {
 
         photoCaptureButton = findViewById(R.id.photo);
         videoCaptureButton = findViewById(R.id.video);
+        galleryButton = findViewById(R.id.gallery);
         submitButton = findViewById(R.id.submit);
 //        image = findViewById(R.id.imageView);
 
-        photoCaptureButton.setOnClickListener(v -> {
+        photoCaptureButton.setOnClickListener(view -> {
             Toast.makeText(ReportActivity.this, "Button for photo is clicked", Toast.LENGTH_LONG).show();
             flag = 1;
-            isImage = true;
-            askPermission();
+            askCameraPermission();
         });
 
         videoCaptureButton.setOnClickListener(view -> {
             Toast.makeText(ReportActivity.this, "Button for video is clicked", Toast.LENGTH_LONG).show();
-            askPermission();
+            flag = 2;
+            askCameraPermission();
+        });
+
+        galleryButton.setOnClickListener(view -> {
+            askGalleryPermission();
         });
 
         submitButton.setOnClickListener(view -> {
@@ -83,79 +177,23 @@ public class ReportActivity extends AppCompatActivity {
             intent.putExtra("absoluteFilePath", absoluteFilePath);
             startActivity(intent);
             finish();
-
-
-//                map.put("file", currentFileName);
-            if (isImage) {
-
-//                    uploadFile(map);
-//                     uploadFileTest(currentPhotoPath);
-                isImage = false;
-            } else {
-//                        uploadFile(currentVideoPath);
-//                        uploadFile(map);
-
-            }
-//                sendDetails(data);
         });
-
-
-
-    }
-
-
-    @Override
-    public void onBackPressed() {
-        moveTaskToBack(true);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                openCamera();
-        }
-    }
-
-    private void askPermission() {
-        List<String> askPermissions = Arrays.asList(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE);
-        List<String> askPermissionTemp = new ArrayList<>();
-        for (String permission : askPermissions) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                askPermissionTemp.add(permission);
-            }
-        }
-
-        if (askPermissionTemp.size() > 0) {
-            ActivityCompat.requestPermissions(this, askPermissionTemp.toArray(new String[0]), PERMISSION_REQUEST_CODE);
-        }
-
-        if (!askPermissionTemp.contains(Manifest.permission.CAMERA)) {
+        if (requestCode == MEDIA_REQUEST_CODE
+                && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
+            Log.i("On Request Permissions", "Inside On Request Permissions");
             openCamera();
         }
-    }
-
-    private void openCamera() {
-        Intent intent = null;
-        if (flag == 1) {
-            intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            File photoFile = photoFile = createFile(FileType.PICTURE);
-
-            if (notNull(photoFile)) {
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
-            }
-
-        } else {
-            intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-            File videoFile = createFile(FileType.VIDEO);
-
-            if (notNull(videoFile)) {
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(videoFile));
-            }
+        if (requestCode == GALLERY_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                pickImageInGallery();
         }
-
-        startActivityForResult(intent, PERMISSION_REQUEST_CODE);
-        flag = 0;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.P)
@@ -169,55 +207,79 @@ public class ReportActivity extends AppCompatActivity {
 //            Bundle extras = data.getExtras();
 //            Bitmap imageBitmap = (Bitmap) extras.get("data");
         }
+
+        if (requestCode == GALLERY_REQUEST_CODE && resultCode == RESULT_OK) {
+            Log.i("Gallery", "On Activity Result for Gallery");
+            Log.i("1 file only", getPathFromUri(getApplicationContext(), data.getData()));
+
+
+            ClipData clipData = data.getClipData();
+            Log.i("ClipData", String.valueOf(clipData));
+            if (notNull(clipData)) {
+                for (int i = 0; i < clipData.getItemCount(); i++) {
+                    Log.i("Uri " + i, clipData.getItemAt(i).getUri().getPath());
+                    galleryDataPaths.add(getPathFromUri(getApplicationContext(), clipData.getItemAt(i).getUri()));
+                }
+
+            } else {
+                galleryRealPath = getPathFromUri(getApplicationContext(), data.getData());
+            }
+//            Log.i("Data", data.getData().getPath());
+//            Bundle extras = data.getExtras();
+//            Bitmap imageBitmap = (Bitmap) extras.get("data");
+        }
     }
 
-//    private void uploadFileTest(String filePath) {
-//        SimpleMultiPartRequest request = new SimpleMultiPartRequest(Request.Method.POST, UPLOAD_URL, new Response.Listener<String>() {
-//            @Override
-//            public void onResponse(String response) {
-//                Toast.makeText(ReportActivity.this, "Response: " + response, Toast.LENGTH_LONG).show();
-//                try {
-//                    JSONObject jObj = new JSONObject(response);
-//                    String message = jObj.getString("message");
-//                } catch (Exception e) {
-//                    //empty
-//                }
-//            }
-//
-//
-//        }, new Response.ErrorListener() {
-//
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                //empty
-//            }
-//        });
-//
-//        request.addFile("file", filePath);
-//        RequestQueue rQueue = Volley.newRequestQueue(getApplicationContext());
-//        rQueue.add(request);
-//
-//    }
+    private void askCameraPermission() {
+        String[] askPermissions = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-    private void uploadFile(Map data) {
+        if (ContextCompat.checkSelfPermission(this, askPermissions[0]) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, askPermissions[1]) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, askPermissions[2]) != PackageManager.PERMISSION_GRANTED) {
 
-        JSONObject jsonRequest = null;
-        Request request = new JsonObjectRequest(Request.Method.POST, UPLOAD_URL, new JSONObject(data), new Response.Listener<JSONObject>() {
+            ActivityCompat.requestPermissions(this, askPermissions, MEDIA_REQUEST_CODE);
+        } else {
+            openCamera();
+        }
+    }
 
-            @Override
-            public void onResponse(JSONObject response) {
-                //empty
-            }
-        }, new Response.ErrorListener() {
+    private void askGalleryPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, GALLERY_REQUEST_CODE);
+        } else {
+            pickImageInGallery();
+        }
+    }
 
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                //empty
-            }
-        });
+    private void openCamera() {
+        switch (flag) {
+            case 1:
+                Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                File photoFile = photoFile = createFile(FileType.PICTURE);
 
-        RequestQueue rQueue = Volley.newRequestQueue(getApplicationContext());
-        rQueue.add(request);
+                if (notNull(photoFile)) {
+                    photoIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                }
+
+                startActivityForResult(photoIntent, MEDIA_REQUEST_CODE);
+                break;
+            case 2:
+                Intent videoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                File videoFile = createFile(FileType.VIDEO);
+
+                if (notNull(videoFile)) {
+                    videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(videoFile));
+                }
+                startActivityForResult(videoIntent, MEDIA_REQUEST_CODE);
+                break;
+        }
+        flag = 0;
+    }
+
+    private void pickImageInGallery() {
+        Intent pickInGallery = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        pickInGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        startActivityForResult(pickInGallery, GALLERY_REQUEST_CODE);
     }
 
     private File createFile(FileType type) {
@@ -252,9 +314,7 @@ public class ReportActivity extends AppCompatActivity {
         return file;
     }
 
-
-
     private boolean notNull(Object o) {
-        return (o != null);
+        return Objects.nonNull(o);
     }
 }
