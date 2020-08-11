@@ -1,4 +1,7 @@
 apply plugin: 'com.android.application'
+File apiKeyPropertiesFile = rootProject.file("apikeys.properties")
+Properties apikeyProperties = new Properties()
+apikeyProperties.load(new FileInputStream(apiKeyPropertiesFile))
 
 android {
     compileSdkVersion 30
@@ -12,6 +15,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "GOOGLE_API_KEY", apikeyProperties['GOOGLE_API_KEY'])
     }
 
     buildTypes {
@@ -56,5 +61,6 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.10'
     implementation 'com.amplifyframework:aws-storage-s3:1.1.2'
     implementation 'com.amplifyframework:aws-auth-cognito:1.1.2'
+    implementation 'com.google.android.libraries.places:places:2.3.0'
 //    implementation 'dev.dworks.libs:volleyplus:+'
 }

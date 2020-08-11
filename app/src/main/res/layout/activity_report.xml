@@ -78,17 +78,5 @@
             </LinearLayout>
         </LinearLayout>
 
-
     </LinearLayout>
-
-    <Button
-        android:id="@+id/submit"
-        android:layout_width="259dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="30dp"
-        android:layout_weight="1"
-        android:text="Submit"
-        android:textSize="12.5dp" />
 </RelativeLayout>
