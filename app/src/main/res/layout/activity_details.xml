@@ -19,7 +19,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_margin="16dp"
-                android:orientation="vertical">
+                android:divider="@drawable/divider"
+                android:orientation="vertical"
+                android:showDividers="middle">
 
                 <TextView
                     android:id="@+id/textView"
@@ -27,9 +29,14 @@
                     android:layout_height="50dp"
                     android:text="Name" />
 
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="10dp" />
+                <EditText
+                    android:id="@+id/location"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:ems="10"
+                    android:hint="Location"
+                    android:inputType="date"
+                    android:textSize="15dp" />
 
                 <EditText
                     android:id="@+id/date"
@@ -39,10 +46,6 @@
                     android:hint="Date"
                     android:inputType="date"
                     android:textSize="15dp" />
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="10dp" />
 
                 <EditText
                     android:id="@+id/reportDescription"
@@ -58,5 +61,15 @@
         </LinearLayout>
     </LinearLayout>
 
+    <Button
+        android:id="@+id/submit"
+        android:layout_width="259dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="30dp"
+        android:layout_weight="1"
+        android:text="Submit"
+        android:textSize="12.5dp" />
 
 </RelativeLayout>

@@ -22,9 +22,10 @@
         android:supportsRtl="true">
         <activity
             android:name=".report.DetailsActivity"
+            android:parentActivityName=".report.ReportActivity"
             android:theme="@style/ReportTheme">
-
         </activity>
+
         <activity
             android:name=".report.ReportActivity"
             android:label="@string/title_activity_report"

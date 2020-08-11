@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -20,7 +19,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -31,6 +29,7 @@ import com.karagathon.vesselreporting.constant.FileType;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -43,9 +42,54 @@ public class ReportActivity extends AppCompatActivity {
     private Button photoCaptureButton, videoCaptureButton, submitButton, galleryButton;
     private LocalDateTime dateTime = LocalDateTime.now();
     private DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-    private String currentFileName;
     private List<String> galleryDataPaths;
-    private String galleryRealPath;
+    private String gallerySingleDataPath;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+        setContentView(R.layout.activity_report);
+
+        photoCaptureButton = findViewById(R.id.photo);
+        videoCaptureButton = findViewById(R.id.video);
+        galleryButton = findViewById(R.id.gallery);
+//        image = findViewById(R.id.imageView);
+
+        photoCaptureButton.setOnClickListener(view -> {
+            Toast.makeText(ReportActivity.this, "Button for photo is clicked", Toast.LENGTH_LONG).show();
+            flag = 1;
+            askCameraPermission();
+        });
+
+        videoCaptureButton.setOnClickListener(view -> {
+            Toast.makeText(ReportActivity.this, "Button for video is clicked", Toast.LENGTH_LONG).show();
+            flag = 2;
+            askCameraPermission();
+        });
+
+        galleryButton.setOnClickListener(view -> {
+            askGalleryPermission();
+        });
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == MEDIA_REQUEST_CODE
+                && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
+            Log.i("On Request Permissions", "Inside On Request Permissions");
+            openCamera();
+        }
+        if (requestCode == GALLERY_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                pickImageInGallery();
+        }
+    }
 
     public static String getPathFromUri(final Context context, final Uri uri) {
 
@@ -100,11 +144,6 @@ public class ReportActivity extends AppCompatActivity {
         return null;
     }
 
-    @Override
-    public void onBackPressed() {
-        moveTaskToBack(true);
-    }
-
     public static String getDataColumn(Context context, Uri uri, String selection,
                                        String[] selectionArgs) {
         Cursor cursor = null;
@@ -125,109 +164,6 @@ public class ReportActivity extends AppCompatActivity {
                 cursor.close();
         }
         return null;
-    }
-
-    public static boolean isExternalStorageDocument(Uri uri) {
-        return "com.android.externalstorage.documents".equals(uri.getAuthority());
-    }
-
-    public static boolean isDownloadsDocument(Uri uri) {
-        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-    }
-
-    public static boolean isMediaDocument(Uri uri) {
-        return "com.android.providers.media.documents".equals(uri.getAuthority());
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-        StrictMode.setVmPolicy(builder.build());
-        setContentView(R.layout.activity_report);
-
-        photoCaptureButton = findViewById(R.id.photo);
-        videoCaptureButton = findViewById(R.id.video);
-        galleryButton = findViewById(R.id.gallery);
-        submitButton = findViewById(R.id.submit);
-//        image = findViewById(R.id.imageView);
-
-        photoCaptureButton.setOnClickListener(view -> {
-            Toast.makeText(ReportActivity.this, "Button for photo is clicked", Toast.LENGTH_LONG).show();
-            flag = 1;
-            askCameraPermission();
-        });
-
-        videoCaptureButton.setOnClickListener(view -> {
-            Toast.makeText(ReportActivity.this, "Button for video is clicked", Toast.LENGTH_LONG).show();
-            flag = 2;
-            askCameraPermission();
-        });
-
-        galleryButton.setOnClickListener(view -> {
-            askGalleryPermission();
-        });
-
-        submitButton.setOnClickListener(view -> {
-//                HashMap<String, String> map = new HashMap<>();
-            Log.i("Current File Name", currentFileName);
-
-            Intent intent = new Intent(ReportActivity.this, DetailsActivity.class);
-            intent.putExtra("currentFileName", currentFileName);
-            intent.putExtra("absoluteFilePath", absoluteFilePath);
-            startActivity(intent);
-            finish();
-        });
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == MEDIA_REQUEST_CODE
-                && grantResults.length > 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                && grantResults[1] == PackageManager.PERMISSION_GRANTED
-                && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-            Log.i("On Request Permissions", "Inside On Request Permissions");
-            openCamera();
-        }
-        if (requestCode == GALLERY_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                pickImageInGallery();
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.P)
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK) {
-            Toast.makeText(ReportActivity.this, "On Activity Result", Toast.LENGTH_LONG).show();
-//            Log.i("Data", data.getData().getPath());
-//            Bundle extras = data.getExtras();
-//            Bitmap imageBitmap = (Bitmap) extras.get("data");
-        }
-
-        if (requestCode == GALLERY_REQUEST_CODE && resultCode == RESULT_OK) {
-            Log.i("Gallery", "On Activity Result for Gallery");
-            Log.i("1 file only", getPathFromUri(getApplicationContext(), data.getData()));
-
-
-            ClipData clipData = data.getClipData();
-            Log.i("ClipData", String.valueOf(clipData));
-            if (notNull(clipData)) {
-                for (int i = 0; i < clipData.getItemCount(); i++) {
-                    Log.i("Uri " + i, clipData.getItemAt(i).getUri().getPath());
-                    galleryDataPaths.add(getPathFromUri(getApplicationContext(), clipData.getItemAt(i).getUri()));
-                }
-
-            } else {
-                galleryRealPath = getPathFromUri(getApplicationContext(), data.getData());
-            }
-//            Log.i("Data", data.getData().getPath());
-//            Bundle extras = data.getExtras();
-//            Bitmap imageBitmap = (Bitmap) extras.get("data");
-        }
     }
 
     private void askCameraPermission() {
@@ -309,12 +245,71 @@ public class ReportActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("Error", e.getLocalizedMessage());
         }
-
-        currentFileName = file.getName();
         return file;
+    }
+
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Intent intent = new Intent(ReportActivity.this, DetailsActivity.class);
+
+        if (requestCode == MEDIA_REQUEST_CODE && resultCode == RESULT_OK) {
+            Toast.makeText(ReportActivity.this, "On Activity Result", Toast.LENGTH_LONG).show();
+            intent.putExtra("isGallery", false);
+            intent.putExtra("absoluteFilePath", absoluteFilePath);
+
+            startActivityForResult(intent, MEDIA_REQUEST_CODE);
+        }
+
+        if (requestCode == GALLERY_REQUEST_CODE && resultCode == RESULT_OK) {
+            galleryDataPaths = new ArrayList<>();
+            Log.i("Gallery", "On Activity Result for Gallery");
+//            Log.i("1 file only", getPathFromUri(getApplicationContext(), data.getData()));
+
+            intent.putExtra("isGallery", true);
+            ClipData clipData = data.getClipData();
+            Log.i("ClipData", String.valueOf(clipData));
+            if (notNull(clipData)) {
+                for (int i = 0; i < clipData.getItemCount(); i++) {
+                    Log.i("Path from URI" + i, getPathFromUri(getApplicationContext(), clipData.getItemAt(i).getUri()));
+                    galleryDataPaths.add(getPathFromUri(getApplicationContext(), clipData.getItemAt(i).getUri()));
+                }
+
+                intent.putExtra("galleryDataPaths",
+                        galleryDataPaths.toArray(new String[galleryDataPaths.size()]));
+            } else {
+                gallerySingleDataPath = getPathFromUri(getApplicationContext(), data.getData());
+                intent.putExtra("gallerySingleDataPath", gallerySingleDataPath);
+            }
+            startActivityForResult(intent, GALLERY_REQUEST_CODE);
+
+
+//            Log.i("Data", data.getData().getPath());
+//            Bundle extras = data.getExtras();
+//            Bitmap imageBitmap = (Bitmap) extras.get("data");
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
     }
 
     private boolean notNull(Object o) {
         return Objects.nonNull(o);
     }
+
 }
