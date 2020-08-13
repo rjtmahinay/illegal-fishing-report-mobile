@@ -20,6 +20,8 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
@@ -50,6 +52,8 @@ public class DetailsActivity extends AppCompatActivity {
     private HashMap<String, Object> dataMap;
     private File singleMediaFile;
     private boolean isGallery;
+    private GoogleSignInOptions gso;
+    private GoogleSignInClient googleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +72,9 @@ public class DetailsActivity extends AppCompatActivity {
             }
         }
 
+        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
+
+//        googleSignInClient =
         dataMap = new HashMap<>();
         //First Data
         dataMap.put("Test", "Test Value");
@@ -87,7 +94,7 @@ public class DetailsActivity extends AppCompatActivity {
 
             picker = new DatePickerDialog(DetailsActivity.this, R.style.Theme_MaterialComponents_Light_Dialog_FixedSize,
                     (datePicker, year1, month1, dayOfMonth)
-                            -> dateText.setText(dayOfMonth + "-" + (month1 + 1) + "-" + year1), year, month, day);
+                            -> dateText.setText(String.format("%d-%d-%d", dayOfMonth, month1 + 1, year1)), year, month, day);
             picker.show();
         });
 
@@ -177,7 +184,7 @@ public class DetailsActivity extends AppCompatActivity {
 //        f.delete();
 
         if (!isGallery) {
-            if (Objects.isNull(singleMediaFile)) {
+            if (Objects.nonNull(singleMediaFile)) {
                 singleMediaFile.delete();
             }
         }
