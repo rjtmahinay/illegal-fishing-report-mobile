@@ -183,7 +183,6 @@ public class LoginActivity extends AppCompatActivity {
 //                        updateUI(null);
                     }
 
-                    // ...
                 });
     }
 
@@ -207,8 +206,6 @@ public class LoginActivity extends AppCompatActivity {
                             Log.w(FACEBOOK_TAG, "signInWithCredential:failure", task.getException());
 
                         }
-
-                        // ...
                     }
                 });
     }

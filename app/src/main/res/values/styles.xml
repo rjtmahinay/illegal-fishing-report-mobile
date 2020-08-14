@@ -1,6 +1,6 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="LoginTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="LoginTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -8,8 +8,6 @@
     </style>
 
     <style name="FlatButton" parent="Theme.AppCompat.Light">
-        <!--        <item name="android:textColor">@color/myPeach</item>-->
-        <!--        <item name="colorControlHighlight">@color/myRed</item>-->
     </style>
 
     <style name="ReportTheme" parent="Theme.AppCompat.Light">

@@ -18,32 +18,29 @@
         android:layout_centerVertical="true"
         android:orientation="vertical">
 
-
         <Button
             android:id="@+id/google_login"
             android:layout_width="268dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="30dp"
             android:layout_marginBottom="15dp"
             android:background="@mipmap/btn_google_signin_light_normal_hdpi"
             android:text="@string/sign_in_google"
             android:textAllCaps="false"
-            android:textColor="@color/quantum_grey500"
-            android:textStyle="bold"
-            android:theme="@style/FlatButton" />
+            android:textColor="@color/quantum_grey600" />
 
         <com.facebook.login.widget.LoginButton
             android:id="@+id/facebook_login"
-            android:layout_width="268dp"
-            android:layout_height="wrap_content"
+            android:layout_width="272dp"
+            android:layout_height="39dp"
             android:layout_gravity="center"
             android:layout_marginTop="15dp"
             android:layout_marginBottom="30dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
-            app:com_facebook_login_text="Sign in with Facebook"
-            app:com_facebook_logout_text="Sign in with Facebook" />
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            app:com_facebook_login_text="@string/sign_in_facebook"
+            app:com_facebook_logout_text="@string/sign_in_facebook" />
 
     </LinearLayout>
 </RelativeLayout>

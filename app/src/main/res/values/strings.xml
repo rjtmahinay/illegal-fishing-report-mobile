@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">VesselReporting</string>
+    <string name="app_name">OBytes Reporting</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -13,7 +13,8 @@
     <string name="title_activity_report">ReportActivity</string>
     <string name="facebook_app_id">372098053775533</string>
     <string name="fb_login_protocol_scheme">fb372098053775533</string>
-    <string name="sign_in_google">Sign in with Google</string>
+    <string name="sign_in_google">Continue with Google</string>
+    <string name="sign_in_facebook">Continue with Facebook</string>
     <!--
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.

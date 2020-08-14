@@ -7,55 +7,48 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="300dp"
         android:layout_centerVertical="true">
 
         <LinearLayout
+
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/name"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_margin="10dp"
-                android:orientation="vertical">
+                android:layout_height="50dp"
+                android:text="Name" />
 
-                <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:text="Name" />
+            <AutoCompleteTextView
+                android:id="@+id/location"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:drawableLeft="@drawable/ic_location"
+                android:textSize="15dp" />
 
-                <EditText
-                    android:id="@+id/location"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:ems="10"
-                    android:hint="Location"
-                    android:inputType="date"
-                    android:textSize="15dp" />
+            <EditText
+                android:id="@+id/date"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:drawableLeft="@drawable/ic_calendar"
+                android:ems="10"
+                android:inputType="date"
+                android:textSize="15dp" />
 
-                <EditText
-                    android:id="@+id/date"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:ems="10"
-                    android:hint="Date"
-                    android:inputType="date"
-                    android:textSize="15dp" />
-
-                <EditText
-                    android:id="@+id/reportDescription"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="Description"
-                    android:inputType="textMultiLine"
-                    android:lines="4"
-                    android:orientation="vertical"
-                    android:textSize="15dp" />
-            </LinearLayout>
+            <EditText
+                android:id="@+id/reportDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="Description"
+                android:inputType="textMultiLine"
+                android:lines="4"
+                android:orientation="vertical"
+                android:textSize="15dp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -69,5 +62,6 @@
         android:layout_weight="1"
         android:text="Submit"
         android:textSize="12.5dp" />
+
 
 </RelativeLayout>

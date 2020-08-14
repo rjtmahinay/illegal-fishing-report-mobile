@@ -177,6 +177,7 @@ public class ReportActivity extends AppCompatActivity {
     private void pickImageInGallery() {
         Intent pickInGallery = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         pickInGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        pickInGallery.setType("image/* video/*");
         startActivityForResult(pickInGallery, GALLERY_REQUEST_CODE);
     }
 
