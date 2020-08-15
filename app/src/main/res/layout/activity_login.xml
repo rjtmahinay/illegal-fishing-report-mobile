@@ -13,17 +13,30 @@
     tools:context=".ui.login.LoginActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="395dp"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:orientation="vertical">
+
+        <Button
+            android:id="@+id/email_login"
+            android:layout_width="267dp"
+            android:layout_height="58dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="@color/quantum_white_100"
+            android:drawableLeft="@drawable/ic_email"
+            android:paddingRight="10dp"
+            android:text="@string/sign_in_email"
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/google_login"
             android:layout_width="268dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="15dp"
             android:layout_marginBottom="15dp"
             android:background="@mipmap/btn_google_signin_light_normal_hdpi"
             android:text="@string/sign_in_google"
@@ -36,11 +49,21 @@
             android:layout_height="39dp"
             android:layout_gravity="center"
             android:layout_marginTop="15dp"
-            android:layout_marginBottom="30dp"
+            android:layout_marginBottom="15dp"
             android:paddingTop="15dp"
             android:paddingBottom="15dp"
             app:com_facebook_login_text="@string/sign_in_facebook"
             app:com_facebook_logout_text="@string/sign_in_facebook" />
 
+
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="85dp"
+        android:layout_height="72dp"
+        android:layout_centerInParent="true"
+        android:indeterminate="true" />
+
 </RelativeLayout>

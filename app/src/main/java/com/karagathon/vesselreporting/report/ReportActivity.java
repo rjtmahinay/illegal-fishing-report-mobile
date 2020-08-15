@@ -14,12 +14,12 @@ import android.os.StrictMode;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ReportActivity extends AppCompatActivity {
+public class ReportActivity extends BaseNavigationActivity {
     private static final int MEDIA_REQUEST_CODE = 1;
     private static final int GALLERY_REQUEST_CODE = 2;
     private static final String DETAILS_URL = "http://192.168.0.109:1331/reportDetails";
@@ -220,12 +220,14 @@ public class ReportActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
-        setContentView(R.layout.activity_report);
+
+        View rootView = getLayoutInflater().inflate(R.layout.activity_report, frameLayout);
 
         photoCaptureButton = findViewById(R.id.photo);
         videoCaptureButton = findViewById(R.id.video);
         galleryButton = findViewById(R.id.gallery);
 //        image = findViewById(R.id.imageView);
+
 
         photoCaptureButton.setOnClickListener(view -> {
             Toast.makeText(ReportActivity.this, "Button for photo is clicked", Toast.LENGTH_LONG).show();
@@ -306,6 +308,7 @@ public class ReportActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         moveTaskToBack(true);
     }
 

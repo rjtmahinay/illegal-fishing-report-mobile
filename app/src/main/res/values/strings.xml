@@ -15,9 +15,13 @@
     <string name="fb_login_protocol_scheme">fb372098053775533</string>
     <string name="sign_in_google">Continue with Google</string>
     <string name="sign_in_facebook">Continue with Facebook</string>
+    <string name="sign_in_email">Continue with Email</string>
+    <string name="nav_drawer_open">Open Nav Drawer</string>
+    <string name="nav_drawer_close">Close Nav Drawer</string>
     <!--
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.
     -->
     <string name="hello_world">Hello Square World!</string>
+    <string name="title_activity_main">MainActivity</string>
 </resources>

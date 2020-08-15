@@ -1,17 +1,20 @@
 package com.karagathon.vesselreporting.report;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amplifyframework.AmplifyException;
@@ -38,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -52,11 +56,12 @@ import cz.msebera.android.httpclient.impl.client.CloseableHttpClient;
 import cz.msebera.android.httpclient.impl.client.HttpClients;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
-public class DetailsActivity extends AppCompatActivity {
+public class DetailsActivity extends BaseNavigationActivity {
 
     private static final String UPLOAD_URL = "http://192.168.0.109:1331/upload";
     public static final int AUTO_PLACE_REQ_CODE = 200;
     public static final String TEXT_MESSAGE_API_URL = "https://api.semaphore.co/api/v4/messages";
+    public static final String NAME_SWITCH_MESSAGE = "When this is enabled, your name will be hidden";
     private EditText dateText, locationText, reportDescription;
     StringBuilder mResult;
     private Button submitButton;
@@ -72,11 +77,14 @@ public class DetailsActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private PlacesAutoCompletedAdapter adapter;
     private AutoCompleteTextView autoCompleteTextView;
+    private Switch nameSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_details);
+
+        View rootView = getLayoutInflater().inflate(R.layout.activity_details, frameLayout);
+
 
         if (Objects.isNull(savedInstanceState)) {
             try {
@@ -100,6 +108,7 @@ public class DetailsActivity extends AppCompatActivity {
         locationText = findViewById(R.id.location);
         reportDescription = findViewById(R.id.reportDescription);
         nameView = findViewById(R.id.name);
+        nameSwitch = findViewById(R.id.nameSwitch);
 
         auth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = auth.getCurrentUser();
@@ -113,9 +122,14 @@ public class DetailsActivity extends AppCompatActivity {
 
             picker = new DatePickerDialog(DetailsActivity.this, R.style.Theme_MaterialComponents_Light_Dialog_FixedSize,
                     (datePicker, year1, month1, dayOfMonth)
-                            -> dateText.setText(String.format("%d-%d-%d", dayOfMonth, month1 + 1, year1)), year, month, day);
+                            -> {
+                        dateText.setText(String.format("%d-%d-%d", dayOfMonth, month1 + 1, year1));
+
+                        reportDescription.setText(dateText.getText().toString());
+                    }, year, month, day);
             picker.show();
         });
+
 
         Places.initialize(getApplicationContext(), BuildConfig.GOOGLE_API_KEY);
 
@@ -130,7 +144,28 @@ public class DetailsActivity extends AppCompatActivity {
 
         autoCompleteTextView.setAdapter(adapter);
 
+        nameSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (nameSwitch.isChecked()) {
+                    AlertDialog alertDialog = new AlertDialog.Builder(DetailsActivity.this).create();
 
+                    alertDialog.setMessage(NAME_SWITCH_MESSAGE);
+
+                    alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                            (dialogInterface, i) -> nameView.setText(""));
+
+                    alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "CANCEL",
+                            (dialogInterface, i) -> nameSwitch.toggle());
+
+                    alertDialog.show();
+
+                } else {
+                    nameView.setText(currentUser.getDisplayName());
+                }
+
+            }
+        });
 //        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
 //                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 //
@@ -176,11 +211,16 @@ public class DetailsActivity extends AppCompatActivity {
             reportIntent = getIntent();
             isGallery = reportIntent.getBooleanExtra("isGallery", false);
 
+            dataMap.put("name", currentUser.getDisplayName());
+            dataMap.put("location", autoCompleteTextView.getEditableText().toString());
+            dataMap.put("date", dateText.getText().toString());
+            dataMap.put("description", reportDescription.getText().toString());
+
             if (isGallery) {
                 String[] galleryDataPaths = reportIntent.getStringArrayExtra("galleryDataPaths");
 
-//                processGalleryData(galleryDataPaths);
-//                uploadData(dataMap);
+                processGalleryData(galleryDataPaths);
+                uploadData(dataMap);
 
             } else {
 //            currentFileName = reportIntent.getStringExtra("currentFileName");
@@ -190,9 +230,9 @@ public class DetailsActivity extends AppCompatActivity {
                 Log.i("Details Absolute File Path", absoluteFilePath);
 
                 singleMediaFile = new File(absoluteFilePath);
-                dataMap.put("files", singleMediaFile.getName());
+                dataMap.put("files", Arrays.asList(singleMediaFile.getName()));
 
-//                uploadData(dataMap);
+                uploadData(dataMap);
 //            storeFilesInObjectStorage(file.getName(), file);
             }
             //send sms
@@ -236,6 +276,14 @@ public class DetailsActivity extends AppCompatActivity {
         }
         reportIntent = null;
         dataMap = null;
+
+        try {
+            Amplify.removePlugin(new AWSCognitoAuthPlugin());
+            Amplify.removePlugin(new AWSS3StoragePlugin());
+        } catch (AmplifyException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void uploadData(Map data) {
@@ -258,7 +306,7 @@ public class DetailsActivity extends AppCompatActivity {
                     = reportIntent.getStringExtra("gallerySingleDataPath");
             file = new File(gallerySingleDataPath);
 
-            dataMap.put("files", file.getName());
+            dataMap.put("files", Arrays.asList(file.getName()));
 //            storeFilesInObjectStorage(file.getName(), file);
             return;
         }

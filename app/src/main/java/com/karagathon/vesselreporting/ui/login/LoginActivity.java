@@ -3,7 +3,9 @@ package com.karagathon.vesselreporting.ui.login;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +32,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.report.ReportActivity;
+import com.karagathon.vesselreporting.report.SignUpActivity;
 
 import java.util.Objects;
 
@@ -42,23 +45,23 @@ public class LoginActivity extends AppCompatActivity {
     private CallbackManager callbackManager;
     private String FACEBOOK_TAG = "Facebook Authentication";
     private AccessTokenTracker accessTokenTracker;
-    private LoginButton facebookSignInButton;
+    private ProgressBar progressBar;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-//        loginViewModel = ViewModelProviders.of(this, new LoginViewModelFactory())
-//                .get(LoginViewModel.class);
-
-//        final EditText usernameEditText = findViewById(R.id.username);
-//        final EditText passwordEditText = findViewById(R.id.password);
         auth = FirebaseAuth.getInstance();
 
         final Button googleSignInButton = findViewById(R.id.google_login);
         callbackManager = CallbackManager.Factory.create();
-        facebookSignInButton = findViewById(R.id.facebook_login);
+        final LoginButton facebookSignInButton = findViewById(R.id.facebook_login);
         facebookSignInButton.setPermissions("email", "public_profile");
+        final Button emailButton = findViewById(R.id.email_login);
+
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+
 
         signInUsingGoogle(googleSignInButton);
         signInUsingFacebook(facebookSignInButton);
@@ -89,7 +92,6 @@ public class LoginActivity extends AppCompatActivity {
             signInToGoogle();
         });
 
-
     }
 
     private void signInUsingFacebook(LoginButton facebookSignInButton) {
@@ -98,7 +100,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onSuccess(LoginResult loginResult) {
                 Log.i(FACEBOOK_TAG, "Sucesss " + loginResult);
                 handleFacebookAccessToken(loginResult.getAccessToken());
-
+                progressBar.setVisibility(View.VISIBLE);
+                goToReport();
 
             }
 
@@ -111,6 +114,13 @@ public class LoginActivity extends AppCompatActivity {
             public void onError(FacebookException error) {
                 Log.e(FACEBOOK_TAG, "Error" + error.getMessage());
             }
+        });
+    }
+
+    private void signInUsingEmail(Button emailButton) {
+        emailButton.setOnClickListener(view -> {
+            Intent emailIntent = new Intent(getApplicationContext(), SignUpActivity.class);
+            startActivity(emailIntent);
         });
     }
 
@@ -128,6 +138,7 @@ public class LoginActivity extends AppCompatActivity {
     private void signInToGoogle() {
         Intent signInIntent = googleSignClient.getSignInIntent();
         startActivityForResult(signInIntent, GOOGLE_SIGN_IN);
+
     }
 
     private void goToReport() {
@@ -140,16 +151,15 @@ public class LoginActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-
-
         if (requestCode == GOOGLE_SIGN_IN && resultCode == RESULT_OK) {
+            Log.i("Google Sign In", "Result Ok");
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 Log.d("Log Activity Result", "firebaseAuthWithGoogle:" + account.getId());
                 firebaseAuthWithGoogle(account.getIdToken());
-
+                progressBar.setVisibility(View.VISIBLE);
                 Intent reportIntent = new Intent(getApplicationContext(), ReportActivity.class);
                 startActivity(reportIntent);
             } catch (ApiException e) {
@@ -160,7 +170,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         callbackManager.onActivityResult(requestCode, resultCode, data);
-//        goToReport();
+
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
@@ -195,14 +205,12 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
                             Log.d(FACEBOOK_TAG, "signInWithCredential:success");
                             FirebaseUser user = auth.getCurrentUser();
 
                             Log.d("Facebook User", String.valueOf(user));
 
                         } else {
-                            // If sign in fails, display a message to the user.
                             Log.w(FACEBOOK_TAG, "signInWithCredential:failure", task.getException());
 
                         }

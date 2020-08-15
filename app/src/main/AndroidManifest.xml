@@ -16,8 +16,12 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
+        android:label="OBytes Reporting"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
+        <activity
+            android:name=".report.BaseNavigationActivity"
+            android:theme="@style/ReportTheme.NoActionBar" />
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
@@ -25,8 +29,7 @@
 
         <activity
             android:name=".report.DetailsActivity"
-            android:parentActivityName=".report.ReportActivity"
-            android:theme="@style/ReportTheme"></activity>
+            android:theme="@style/ReportTheme.NoActionBar" />
         <activity
             android:name=".report.ReportActivity"
             android:label="@string/title_activity_report"
