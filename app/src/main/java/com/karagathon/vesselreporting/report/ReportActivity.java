@@ -57,7 +57,6 @@ public class ReportActivity extends BaseNavigationActivity {
 
 
         if (isExternalStorageDocument(uri)) {
-            Log.i("Inside External Storage", "Inside External Storage");
             final String docId = DocumentsContract.getDocumentId(uri);
             final String[] split = docId.split(":");
             final String type = split[0];
@@ -66,13 +65,12 @@ public class ReportActivity extends BaseNavigationActivity {
                 return Environment.getExternalStorageDirectory() + "/" + split[1];
             }
         } else if (isDownloadsDocument(uri)) {
-            Log.i("Inside Download Storage", "Inside Download Storage");
             final String id = DocumentsContract.getDocumentId(uri);
             final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.parseLong(id));
 
             return getDataColumn(context, contentUri, null, null);
+
         } else if (isMediaDocument(uri)) {
-            Log.i("Inside Media ", "Inside Media ");
             final String docId = DocumentsContract.getDocumentId(uri);
             final String[] split = docId.split(":");
             final String type = split[0];
@@ -95,12 +93,10 @@ public class ReportActivity extends BaseNavigationActivity {
 
         // Media Store
         if ("content".equalsIgnoreCase(uri.getScheme())) {
-            Log.i("Inside Media Store", "Inside Media Store");
             return getDataColumn(context, uri, null, null);
         }
         //File
         else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            Log.i("Inside File", "Inside File");
             return uri.getPath();
         }
         return null;
@@ -228,7 +224,6 @@ public class ReportActivity extends BaseNavigationActivity {
         galleryButton = findViewById(R.id.gallery);
 //        image = findViewById(R.id.imageView);
 
-
         photoCaptureButton.setOnClickListener(view -> {
             Toast.makeText(ReportActivity.this, "Button for photo is clicked", Toast.LENGTH_LONG).show();
             flag = 1;
@@ -245,6 +240,11 @@ public class ReportActivity extends BaseNavigationActivity {
             askGalleryPermission();
         });
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
@@ -298,11 +298,6 @@ public class ReportActivity extends BaseNavigationActivity {
                 intent.putExtra("gallerySingleDataPath", gallerySingleDataPath);
             }
             startActivityForResult(intent, GALLERY_REQUEST_CODE);
-
-
-//            Log.i("Data", data.getData().getPath());
-//            Bundle extras = data.getExtras();
-//            Bitmap imageBitmap = (Bitmap) extras.get("data");
         }
     }
 

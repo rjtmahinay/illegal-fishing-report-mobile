@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.facebook.AccessToken;
@@ -22,17 +21,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.karagathon.vesselreporting.R;
+import com.karagathon.vesselreporting.constant.AuthProviders;
 import com.karagathon.vesselreporting.report.ReportActivity;
-import com.karagathon.vesselreporting.report.SignUpActivity;
 
 import java.util.Objects;
 
@@ -57,7 +54,6 @@ public class LoginActivity extends AppCompatActivity {
         callbackManager = CallbackManager.Factory.create();
         final LoginButton facebookSignInButton = findViewById(R.id.facebook_login);
         facebookSignInButton.setPermissions("email", "public_profile");
-        final Button emailButton = findViewById(R.id.email_login);
 
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
@@ -99,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.i(FACEBOOK_TAG, "Sucesss " + loginResult);
-                handleFacebookAccessToken(loginResult.getAccessToken());
+                fireBaseAuth(loginResult.getAccessToken().getToken(), AuthProviders.FACEBOOK);
                 progressBar.setVisibility(View.VISIBLE);
                 goToReport();
 
@@ -117,12 +113,13 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void signInUsingEmail(Button emailButton) {
-        emailButton.setOnClickListener(view -> {
-            Intent emailIntent = new Intent(getApplicationContext(), SignUpActivity.class);
-            startActivity(emailIntent);
-        });
-    }
+    // to be deleted
+//    private void signInUsingEmail(Button emailButton) {
+//        emailButton.setOnClickListener(view -> {
+//            Intent emailIntent = new Intent(getApplicationContext(), SignUpActivity.class);
+//            startActivity(emailIntent);
+//        });
+//    }
 
     @Override
     protected void onStart() {
@@ -158,7 +155,7 @@ public class LoginActivity extends AppCompatActivity {
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 Log.d("Log Activity Result", "firebaseAuthWithGoogle:" + account.getId());
-                firebaseAuthWithGoogle(account.getIdToken());
+                fireBaseAuth(account.getIdToken(), AuthProviders.GOOGLE);
                 progressBar.setVisibility(View.VISIBLE);
                 Intent reportIntent = new Intent(getApplicationContext(), ReportActivity.class);
                 startActivity(reportIntent);
@@ -170,11 +167,22 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         callbackManager.onActivityResult(requestCode, resultCode, data);
-
     }
 
-    private void firebaseAuthWithGoogle(String idToken) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+
+    private void fireBaseAuth(String idToken, AuthProviders authProvider) {
+        AuthCredential credential;
+        switch (authProvider) {
+            case GOOGLE:
+                credential = GoogleAuthProvider.getCredential(idToken, null);
+                break;
+            case FACEBOOK:
+                credential = FacebookAuthProvider.getCredential(idToken);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + authProvider);
+        }
+
         auth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
 
@@ -191,29 +199,6 @@ public class LoginActivity extends AppCompatActivity {
                         Log.w("Firebase Sign In", "signInWithCredential:failure", task.getException());
 //                        Snackbar.make(mBinding.mainLayout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
 //                        updateUI(null);
-                    }
-
-                });
-    }
-
-    private void handleFacebookAccessToken(AccessToken token) {
-        Log.d(FACEBOOK_TAG, "handleFacebookAccessToken:" + token);
-
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        auth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(FACEBOOK_TAG, "signInWithCredential:success");
-                            FirebaseUser user = auth.getCurrentUser();
-
-                            Log.d("Facebook User", String.valueOf(user));
-
-                        } else {
-                            Log.w(FACEBOOK_TAG, "signInWithCredential:failure", task.getException());
-
-                        }
                     }
                 });
     }

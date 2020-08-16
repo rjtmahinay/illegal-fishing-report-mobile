@@ -1,3 +1,4 @@
 <resources>
-    <string name="hello_world">Hello Round World!</string>
+    <string name="item_logout">Logout</string>
+    <string name="item_report">Report</string>
 </resources>

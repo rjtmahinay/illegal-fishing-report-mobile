@@ -3,7 +3,8 @@
 
     <group>
         <item
-            android:id="@+id/logout"
-            android:title="Logout"></item>
+            android:id="@+id/item_report"
+            android:title="@string/item_report" />
     </group>
+
 </menu>
