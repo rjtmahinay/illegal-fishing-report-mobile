@@ -23,6 +23,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.karagathon.vesselreporting.R;
+import com.karagathon.vesselreporting.common.SettingsActivity;
 import com.karagathon.vesselreporting.ui.login.LoginActivity;
 import com.squareup.picasso.Picasso;
 
@@ -81,17 +82,21 @@ public class BaseNavigationActivity extends AppCompatActivity implements Navigat
         int itemId = item.getItemId();
 
         switch (itemId) {
-//            case R.id.logout:
-//                auth.signOut();
-//                Intent signInIntent = new Intent(BaseNavigationActivity.this, LoginActivity.class);
+//            case R.id.item_report:
+//                Log.i("Item Report", "Item Report");
+//                Intent signInIntent = new Intent(BaseNavigationActivity.this, ReportActivity.class);
 //                startActivity(signInIntent);
 //                break;
-            case R.id.item_report:
-                Log.i("Item Report", "Item Report");
-                Intent signInIntent = new Intent(BaseNavigationActivity.this, ReportActivity.class);
-                startActivity(signInIntent);
+            case R.id.item_history:
+                Log.i("Item History", "Item History");
+                Intent historyIntent = new Intent(BaseNavigationActivity.this, HistoryActivity.class);
+                startActivity(historyIntent);
                 break;
-
+            case R.id.item_settings:
+                Log.i("Item Settings", "Item Settings");
+                Intent settingsIntent = new Intent(BaseNavigationActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
+                break;
         }
 
         DrawerLayout drawer = findViewById(R.id.drawerLayout);

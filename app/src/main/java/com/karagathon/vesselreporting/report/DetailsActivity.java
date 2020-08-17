@@ -1,9 +1,8 @@
 package com.karagathon.vesselreporting.report;
 
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,11 +10,11 @@ import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.amplifyframework.AmplifyException;
 import com.amplifyframework.auth.cognito.AWSCognitoAuthPlugin;
@@ -34,12 +33,15 @@ import com.google.firebase.auth.FirebaseUser;
 import com.karagathon.vesselreporting.BuildConfig;
 import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.adapter.PlacesAutoCompletedAdapter;
+import com.karagathon.vesselreporting.helper.DatabaseHelper;
+import com.karagathon.vesselreporting.model.Report;
 
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -56,14 +58,12 @@ import cz.msebera.android.httpclient.impl.client.CloseableHttpClient;
 import cz.msebera.android.httpclient.impl.client.HttpClients;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
-public class DetailsActivity extends BaseNavigationActivity {
+public class DetailsActivity extends AppCompatActivity {
 
     private static final String UPLOAD_URL = "http://192.168.0.109:1331/upload";
     public static final int AUTO_PLACE_REQ_CODE = 200;
     public static final String TEXT_MESSAGE_API_URL = "https://api.semaphore.co/api/v4/messages";
-    public static final String NAME_SWITCH_MESSAGE = "When this is enabled, your name will be hidden";
     private EditText dateText, locationText, reportDescription;
-    StringBuilder mResult;
     private Button submitButton;
     private DatePickerDialog picker;
     private String currentFileName;
@@ -74,17 +74,14 @@ public class DetailsActivity extends BaseNavigationActivity {
     private GoogleSignInClient googleSignInClient;
     private TextView nameView;
     private FirebaseAuth auth;
-    private RecyclerView recyclerView;
     private PlacesAutoCompletedAdapter adapter;
     private AutoCompleteTextView autoCompleteTextView;
-    private Switch nameSwitch;
+    private LocalDate localDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        View rootView = getLayoutInflater().inflate(R.layout.activity_details, frameLayout);
-
+        setContentView(R.layout.activity_details);
 
         if (Objects.isNull(savedInstanceState)) {
             try {
@@ -98,17 +95,13 @@ public class DetailsActivity extends BaseNavigationActivity {
             }
         }
 
-//        googleSignInClient =
         dataMap = new HashMap<>();
-        //First Data
-        dataMap.put("Test", "Test Value");
-
         dateText = findViewById(R.id.date);
         submitButton = findViewById(R.id.submit);
         locationText = findViewById(R.id.location);
         reportDescription = findViewById(R.id.reportDescription);
+
         nameView = findViewById(R.id.name);
-        nameSwitch = findViewById(R.id.nameSwitch);
 
         auth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = auth.getCurrentUser();
@@ -123,9 +116,8 @@ public class DetailsActivity extends BaseNavigationActivity {
             picker = new DatePickerDialog(DetailsActivity.this, R.style.Theme_MaterialComponents_Light_Dialog_FixedSize,
                     (datePicker, year1, month1, dayOfMonth)
                             -> {
-                        dateText.setText(String.format("%d-%d-%d", dayOfMonth, month1 + 1, year1));
-
-                        reportDescription.setText(dateText.getText().toString());
+                        dateText.setText(String.format("%d-%d-%d", year1, month1 + 1, dayOfMonth));
+                        localDate = LocalDate.of(year1, month1 + 1, dayOfMonth);
                     }, year, month, day);
             picker.show();
         });
@@ -144,28 +136,13 @@ public class DetailsActivity extends BaseNavigationActivity {
 
         autoCompleteTextView.setAdapter(adapter);
 
-        nameSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (nameSwitch.isChecked()) {
-                    AlertDialog alertDialog = new AlertDialog.Builder(DetailsActivity.this).create();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean isHideNameEnabled = sharedPreferences.getBoolean("hide_name", false);
 
-                    alertDialog.setMessage(NAME_SWITCH_MESSAGE);
+        if (isHideNameEnabled) {
+            nameView.setVisibility(View.GONE);
+        }
 
-                    alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                            (dialogInterface, i) -> nameView.setText(""));
-
-                    alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "CANCEL",
-                            (dialogInterface, i) -> nameSwitch.toggle());
-
-                    alertDialog.show();
-
-                } else {
-                    nameView.setText(currentUser.getDisplayName());
-                }
-
-            }
-        });
 //        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
 //                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 //
@@ -238,6 +215,13 @@ public class DetailsActivity extends BaseNavigationActivity {
             //send sms
             Log.i("Sending a Message Now!", "Sending a Message Now!");
 //           new SendTextMessage().execute();
+
+            Report report
+                    = new Report(nameView.getText().toString(), locationText.getText().toString(),
+                    reportDescription.getText().toString(), localDate);
+
+            DatabaseHelper databaseHelper = new DatabaseHelper(getApplicationContext());
+            databaseHelper.add(report);
         });
 
     }
@@ -257,10 +241,6 @@ public class DetailsActivity extends BaseNavigationActivity {
 //        }
     }
 
-    @Override
-    public void onBackPressed() {
-        moveTaskToBack(true);
-    }
 
     @Override
     protected void onDestroy() {
@@ -328,43 +308,6 @@ public class DetailsActivity extends BaseNavigationActivity {
                 storageFailure -> Log.e("MyAmplifyApp", "Upload failed", storageFailure));
     }
 
-//    private void sendSMS(){
-//        String apiKey = "495b468d186d881276b0fb189d0d140f";
-//        String numbers = "9272697150";
-//        String message = "Hi From Android";
-//        String route="default";
-//
-//        String encoded_message= null;
-//        try {
-//            encoded_message = URLEncoder.encode(message, "UTF-8");
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
-//
-////Send SMS API
-//        String mainUrl="https://api.semaphore.co/api/v4/messages?";
-//
-////Prepare parameter string
-//        StringBuilder sbPostData= new StringBuilder(mainUrl);
-//        sbPostData.append("apikey="+apiKey);
-//        sbPostData.append("&number="+numbers);
-//        sbPostData.append("&message="+message);
-//        try {
-//            URL myURL = new URL(sbPostData.toString());
-//            URLConnection myURLConnection = myURL.openConnection();
-//            myURLConnection.connect();
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(myURLConnection.getInputStream()));
-//            //reading response
-//            Log.i("Sending response","response");
-//            String response;
-//            while ((response = reader.readLine()) != null)
-//                //print response
-//            //finally close connection
-//            reader.close();
-//        } catch(Exception e){
-//            Log.e("Error", "" + e);
-//        }
-//    }
 
     private class SendTextMessage extends AsyncTask {
 
@@ -377,11 +320,12 @@ public class DetailsActivity extends BaseNavigationActivity {
         private void sendSMS() {
             HttpPost post = new HttpPost(TEXT_MESSAGE_API_URL);
 
+            String message = "Hi from Android";
             // add request parameter, form parameters
             List<NameValuePair> urlParameters = new ArrayList<>();
             urlParameters.add(new BasicNameValuePair("apikey", BuildConfig.SEMAPHORE_API_KEY));
             urlParameters.add(new BasicNameValuePair("number", "09272697150"));
-            urlParameters.add(new BasicNameValuePair("message", "Hi from Android"));
+            urlParameters.add(new BasicNameValuePair("message", message));
 
             try {
                 post.setEntity(new UrlEncodedFormEntity(urlParameters));

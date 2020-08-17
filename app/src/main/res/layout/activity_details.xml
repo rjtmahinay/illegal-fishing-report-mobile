@@ -17,23 +17,10 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="47dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/name"
-                    android:layout_width="263dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center_horizontal" />
-
-                <Switch
-                    android:id="@+id/nameSwitch"
-                    android:layout_width="59dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center_horizontal" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="49dp" />
 
             <AutoCompleteTextView
                 android:id="@+id/location"
