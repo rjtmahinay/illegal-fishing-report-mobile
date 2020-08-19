@@ -1,8 +1,15 @@
 package com.karagathon.vesselreporting.report;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,8 +19,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
 import com.amplifyframework.AmplifyException;
@@ -25,15 +34,18 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.karagathon.vesselreporting.BuildConfig;
 import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.adapter.PlacesAutoCompletedAdapter;
-import com.karagathon.vesselreporting.helper.DatabaseHelper;
 import com.karagathon.vesselreporting.model.Report;
 
 import org.json.JSONObject;
@@ -41,12 +53,13 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -63,6 +76,7 @@ public class DetailsActivity extends AppCompatActivity {
     private static final String UPLOAD_URL = "http://192.168.0.109:1331/upload";
     public static final int AUTO_PLACE_REQ_CODE = 200;
     public static final String TEXT_MESSAGE_API_URL = "https://api.semaphore.co/api/v4/messages";
+    public static final int LOCATION_REQ_CODE = 3;
     private EditText dateText, locationText, reportDescription;
     private Button submitButton;
     private DatePickerDialog picker;
@@ -76,7 +90,8 @@ public class DetailsActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private PlacesAutoCompletedAdapter adapter;
     private AutoCompleteTextView autoCompleteTextView;
-    private LocalDate localDate;
+    private Date date;
+    private FusedLocationProviderClient fusedLocationProviderClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +110,9 @@ public class DetailsActivity extends AppCompatActivity {
             }
         }
 
+
         dataMap = new HashMap<>();
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         dateText = findViewById(R.id.date);
         submitButton = findViewById(R.id.submit);
         locationText = findViewById(R.id.location);
@@ -117,7 +134,7 @@ public class DetailsActivity extends AppCompatActivity {
                     (datePicker, year1, month1, dayOfMonth)
                             -> {
                         dateText.setText(String.format("%d-%d-%d", year1, month1 + 1, dayOfMonth));
-                        localDate = LocalDate.of(year1, month1 + 1, dayOfMonth);
+                        date = cldr.getTime();
                     }, year, month, day);
             picker.show();
         });
@@ -185,6 +202,9 @@ public class DetailsActivity extends AppCompatActivity {
 
 
         submitButton.setOnClickListener(view -> {
+
+            getLocation();
+
             reportIntent = getIntent();
             isGallery = reportIntent.getBooleanExtra("isGallery", false);
 
@@ -216,12 +236,19 @@ public class DetailsActivity extends AppCompatActivity {
             Log.i("Sending a Message Now!", "Sending a Message Now!");
 //           new SendTextMessage().execute();
 
-            Report report
-                    = new Report(nameView.getText().toString(), locationText.getText().toString(),
-                    reportDescription.getText().toString(), localDate);
 
-            DatabaseHelper databaseHelper = new DatabaseHelper(getApplicationContext());
-            databaseHelper.add(report);
+            DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
+
+
+            String id = dbRef.push().getKey();
+            Report report
+                    = new Report(id, nameView.getText().toString(), locationText.getText().toString(),
+                    reportDescription.getText().toString(), date);
+
+            Log.i("Details Date", String.valueOf(date));
+//            dbRef.child(id).setValue(report);
+//            DatabaseHelper databaseHelper = new DatabaseHelper(getApplicationContext());
+//            databaseHelper.add(report);
         });
 
     }
@@ -229,18 +256,17 @@ public class DetailsActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-//        Log.i("Places Result Code", String.valueOf(resultCode));
-//        if (requestCode == AUTO_PLACE_REQ_CODE && resultCode == RESULT_OK) {
-//
-//            Place place = Autocomplete.getPlaceFromIntent(data);
-//
-//            locationText.setText(place.getAddress());
-//        } else if (requestCode == AUTO_PLACE_REQ_CODE && resultCode == RESULT_CANCELED) {
-//            Log.i("User", "Cancelled");
-//
-//        }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.i("Inside Permission Result", "Inside Permission Result");
+        Log.i("Grant Result", String.valueOf(grantResults[0]));
+        if (requestCode == LOCATION_REQ_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            Log.i("Inside Permission Condition", "Inside Permission Condition");
+            showLocationDialog();
+        }
+    }
 
     @Override
     protected void onDestroy() {
@@ -308,6 +334,57 @@ public class DetailsActivity extends AppCompatActivity {
                 storageFailure -> Log.e("MyAmplifyApp", "Upload failed", storageFailure));
     }
 
+
+    private void getLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQ_CODE);
+        }
+        Log.i("Get Location", "Get Location");
+        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
+            try {
+                Location location = task.getResult();
+                Log.i("location", String.valueOf(location));
+
+
+                if (Objects.nonNull(location)) {
+
+                    Geocoder geocoder = new Geocoder(DetailsActivity.this, Locale.getDefault());
+
+                    List<Address> address = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+                    dataMap.put("latitude", address.get(0).getLatitude());
+                    dataMap.put("longitude", address.get(0).getLongitude());
+
+                    Log.i("Details Activity Latitude", String.valueOf(address.get(0).getLatitude()));
+                    Log.i("Details Activity Longitude", String.valueOf(address.get(0).getLongitude()));
+
+                } else {
+                    Uri gmmIntentUri = Uri.parse("geo:12.8797, 121.7740");
+
+                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    startActivity(mapIntent);
+                }
+            } catch (Exception e) {
+                Log.e("Error", e.getLocalizedMessage());
+            }
+
+        });
+    }
+
+
+    private void turnGPSOn() {
+        Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
+        intent.putExtra("enabled", true);
+        sendBroadcast(intent);
+    }
+
+    private void showLocationDialog() {
+        AlertDialog alertDialog = new AlertDialog.Builder(DetailsActivity.this).create();
+        alertDialog.setTitle("Permission Denied");
+        alertDialog.setMessage("Without this permission, we cannot get an actual coordinates of the report");
+        alertDialog.show();
+    }
 
     private class SendTextMessage extends AsyncTask {
 

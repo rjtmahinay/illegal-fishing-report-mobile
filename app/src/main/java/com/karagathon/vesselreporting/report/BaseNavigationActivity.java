@@ -17,6 +17,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
+import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.material.navigation.NavigationView;
@@ -120,7 +121,19 @@ public class BaseNavigationActivity extends AppCompatActivity implements Navigat
 
         TextView navLogout = findViewById(R.id.logout);
         navLogout.setOnClickListener(view -> {
-            auth.signOut();
+
+
+            user.getProviderData().forEach(u -> {
+                switch (u.getProviderId()) {
+                    case "facebook.com":
+                        auth.signOut();
+                        LoginManager.getInstance().logOut();
+                        break;
+                    default:
+                        auth.signOut();
+                }
+            });
+
             Intent signInIntent = new Intent(BaseNavigationActivity.this, LoginActivity.class);
             startActivity(signInIntent);
         });

@@ -1,18 +1,22 @@
 package com.karagathon.vesselreporting.report;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -44,6 +48,7 @@ public class ReportActivity extends BaseNavigationActivity {
     private DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
     private List<String> galleryDataPaths;
     private String gallerySingleDataPath;
+    private boolean isGPSEnabled;
 
     public static boolean isExternalStorageDocument(Uri uri) {
         return "com.android.externalstorage.documents".equals(uri.getAuthority());
@@ -171,9 +176,11 @@ public class ReportActivity extends BaseNavigationActivity {
     }
 
     private void pickImageInGallery() {
-        Intent pickInGallery = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        Intent pickInGallery = new Intent(Intent.ACTION_GET_CONTENT);
         pickInGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        pickInGallery.setType("image/* video/*");
+        pickInGallery.setType("*/*");
+//        pickInGallery.setType("image/*, video/*");
+//        pickInGallery.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"image/*, video/*"});
         startActivityForResult(pickInGallery, GALLERY_REQUEST_CODE);
     }
 
@@ -227,17 +234,30 @@ public class ReportActivity extends BaseNavigationActivity {
         photoCaptureButton.setOnClickListener(view -> {
             Toast.makeText(ReportActivity.this, "Button for photo is clicked", Toast.LENGTH_LONG).show();
             flag = 1;
-            askCameraPermission();
+            checkGPSIsEnabled();
+            if (isGPSEnabled) {
+                askCameraPermission();
+                isGPSEnabled = false;
+            }
         });
 
         videoCaptureButton.setOnClickListener(view -> {
             Toast.makeText(ReportActivity.this, "Button for video is clicked", Toast.LENGTH_LONG).show();
+            checkGPSIsEnabled();
             flag = 2;
-            askCameraPermission();
+            if (isGPSEnabled) {
+                askCameraPermission();
+                isGPSEnabled = false;
+            }
+
         });
 
         galleryButton.setOnClickListener(view -> {
-            askGalleryPermission();
+            checkGPSIsEnabled();
+            if (isGPSEnabled) {
+                askGalleryPermission();
+                isGPSEnabled = false;
+            }
         });
 
     }
@@ -261,6 +281,7 @@ public class ReportActivity extends BaseNavigationActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 pickImageInGallery();
         }
+
     }
 
     @Override
@@ -306,6 +327,34 @@ public class ReportActivity extends BaseNavigationActivity {
         super.onBackPressed();
         moveTaskToBack(true);
     }
+
+    private void checkGPSIsEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            showGPSDialog();
+        } else {
+            isGPSEnabled = true;
+            Log.i("GPS is Enabled", "GPS is Enabled");
+        }
+    }
+
+    private void showGPSDialog() {
+        AlertDialog alertDialog = new AlertDialog.Builder(ReportActivity.this).create();
+        alertDialog.setTitle("Location is Off");
+        alertDialog.setMessage("Turn on Location to report");
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Turn On Location", (dialogInterface, i) -> {
+            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+
+        });
+
+        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", (dialogInterface, i) -> {
+            //
+        });
+
+        alertDialog.show();
+    }
+
 
     private boolean notNull(Object o) {
         return Objects.nonNull(o);

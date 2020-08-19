@@ -1,6 +1,7 @@
 package com.karagathon.vesselreporting.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -119,6 +120,7 @@ public class PlacesAutoCompletedAdapter extends ArrayAdapter<PlacesAutoCompleted
         Filter filter = new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
+                Log.i("Constraint", String.valueOf(constraint));
                 FilterResults results = new FilterResults();
                 if (constraint != null) {
                     // Query the autocomplete API for the entered constraint
