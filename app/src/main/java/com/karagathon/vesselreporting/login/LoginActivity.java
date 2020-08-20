@@ -1,4 +1,4 @@
-package com.karagathon.vesselreporting.ui.login;
+package com.karagathon.vesselreporting.login;
 
 import android.content.Intent;
 import android.os.Bundle;
