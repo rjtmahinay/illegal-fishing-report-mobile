@@ -25,7 +25,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.common.SettingsActivity;
-import com.karagathon.vesselreporting.ui.login.LoginActivity;
+import com.karagathon.vesselreporting.login.LoginActivity;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
