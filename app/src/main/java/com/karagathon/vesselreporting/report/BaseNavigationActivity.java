@@ -31,7 +31,10 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class BaseNavigationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, FirebaseAuth.AuthStateListener {
+import java.util.Objects;
+
+public class BaseNavigationActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, FirebaseAuth.AuthStateListener {
 
     protected FrameLayout frameLayout;
     private Toolbar toolbar;
@@ -83,11 +86,6 @@ public class BaseNavigationActivity extends AppCompatActivity implements Navigat
         int itemId = item.getItemId();
 
         switch (itemId) {
-//            case R.id.item_report:
-//                Log.i("Item Report", "Item Report");
-//                Intent signInIntent = new Intent(BaseNavigationActivity.this, ReportActivity.class);
-//                startActivity(signInIntent);
-//                break;
             case R.id.item_history:
                 Log.i("Item History", "Item History");
                 Intent historyIntent = new Intent(BaseNavigationActivity.this, HistoryActivity.class);
@@ -107,7 +105,6 @@ public class BaseNavigationActivity extends AppCompatActivity implements Navigat
 
     private void initNavDetails() {
 
-
         FirebaseUser user = auth.getCurrentUser();
 
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -121,7 +118,6 @@ public class BaseNavigationActivity extends AppCompatActivity implements Navigat
 
         TextView navLogout = findViewById(R.id.logout);
         navLogout.setOnClickListener(view -> {
-
 
             user.getProviderData().forEach(u -> {
                 switch (u.getProviderId()) {
@@ -175,7 +171,7 @@ public class BaseNavigationActivity extends AppCompatActivity implements Navigat
         GraphRequest request = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), (object, response) -> {
             JSONObject json = response.getJSONObject();
             try {
-                if (json != null) {
+                if (Objects.nonNull(json)) {
                     String fbPhoto = object.getJSONObject("picture")
                             .getJSONObject("data")
                             .getString("url");

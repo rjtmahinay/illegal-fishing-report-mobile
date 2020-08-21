@@ -56,6 +56,9 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -77,16 +80,15 @@ import cz.msebera.android.httpclient.message.BasicNameValuePair;
 public class DetailsActivity extends AppCompatActivity {
 
     private static final String UPLOAD_URL = "http://192.168.0.109:1331/upload";
-    public static final String TEXT_MESSAGE_API_URL = "https://api.semaphore.co/api/v4/messages";
-    public static final int LOCATION_REQ_CODE = 3;
-    private EditText dateText, locationText, reportDescription;
+    private static final String TEXT_MESSAGE_API_URL = "https://api.semaphore.co/api/v4/messages";
+    private static final int LOCATION_REQ_CODE = 3;
+    private EditText locationText, reportDescription;
     private Button submitButton;
     private DatePickerDialog picker;
     private Intent reportIntent;
     private HashMap<String, Object> dataMap;
     private File singleMediaFile;
-    private boolean isGallery;
-    private TextView nameView;
+    private TextView nameView, dateText;
     private FirebaseAuth auth;
     private PlacesAutoCompletedAdapter adapter;
     private AutoCompleteTextView autoCompleteTextView;
@@ -94,8 +96,11 @@ public class DetailsActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
-    private boolean isLastLocationNull;
     private ProgressBar detailsProgressBar;
+    private boolean isLastLocationNull;
+    private boolean isGallery;
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault());
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,26 +128,35 @@ public class DetailsActivity extends AppCompatActivity {
         detailsProgressBar.setVisibility(View.GONE);
 
         dataMap = new HashMap<>();
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         auth = FirebaseAuth.getInstance();
 
         FirebaseUser currentUser = auth.getCurrentUser();
         nameView.setText(currentUser.getDisplayName());
 
-        dateText.setOnClickListener(view -> {
-            final Calendar cldr = Calendar.getInstance();
-            int day = cldr.get(Calendar.DAY_OF_MONTH);
-            int month = cldr.get(Calendar.MONTH);
-            int year = cldr.get(Calendar.YEAR);
-
-            picker = new DatePickerDialog(DetailsActivity.this, R.style.Theme_MaterialComponents_Light_Dialog_FixedSize,
-                    (datePicker, year1, month1, dayOfMonth)
-                            -> {
-                        dateText.setText(String.format("%d-%d-%d", year1, month1 + 1, dayOfMonth));
-                        date = cldr.getTime();
-                    }, year, month, day);
-            picker.show();
-        });
+        populateDate();
+//        dateText.setOnClickListener(view -> {
+//            final Calendar cldr = Calendar.getInstance();
+//            int day = cldr.get(Calendar.DAY_OF_MONTH);
+//            int month = cldr.get(Calendar.MONTH);
+//            int year = cldr.get(Calendar.YEAR);
+//            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+//
+//            picker = new DatePickerDialog(DetailsActivity.this, R.style.Theme_MaterialComponents_Light_Dialog_FixedSize,
+//                    (datePicker, year1, month1, dayOfMonth)
+//                            -> {
+//                        dateText.setText(String.format(Locale.getDefault(),"%d-%d-%d", year1, month1 + 1, dayOfMonth));
+//                        try {
+//                            date = dateFormat.parse(dateText.getText().toString());
+//                        } catch (ParseException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }, year, month, day);
+//            picker.getDatePicker().setMinDate(cldr.getTimeInMillis());
+//            picker.show();
+//        });
 
 
         Places.initialize(getApplicationContext(), BuildConfig.GOOGLE_API_KEY);
@@ -165,47 +179,6 @@ public class DetailsActivity extends AppCompatActivity {
             nameView.setVisibility(View.GONE);
         }
 
-//        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
-//                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
-//
-//        // Specify the types of place data to return.
-//        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
-//
-//        // Set up a PlaceSelectionListener to handle the response.
-//        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-//            @Override
-//            public void onPlaceSelected(Place place) {
-//                // TODO: Get info about the selected place.
-//                Log.i("Location", "Place: " + place.getName() + ", " + place.getId());
-//            }
-//
-//
-//            @Override
-//            public void onError(Status status) {
-//                // TODO: Handle the error.
-//                Log.i("Location", "An error occurred: " + status);
-//            }
-//        });
-//        locationText.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable editable) {
-//                if (locationText.length() < 1) {
-//                    locationText.setError("Location is required");
-//                }
-//            }
-//        });
-
-
         submitButton.setOnClickListener(view -> {
 
             reportIntent = getIntent();
@@ -215,7 +188,7 @@ public class DetailsActivity extends AppCompatActivity {
             dataMap.put("location", autoCompleteTextView.getEditableText().toString());
             dataMap.put("date", dateText.getText().toString());
             dataMap.put("description", reportDescription.getText().toString());
-            detailsProgressBar.setVisibility(View.VISIBLE);
+//            detailsProgressBar.setVisibility(View.VISIBLE);
             getLocation();
 
             if (isGallery) {
@@ -241,19 +214,17 @@ public class DetailsActivity extends AppCompatActivity {
 
 
             DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
-
+            String formattedDate = dateFormat.format(date);
 
             String id = dbRef.push().getKey();
             Report report
                     = new Report(id, nameView.getText().toString(), locationText.getText().toString(),
-                    reportDescription.getText().toString(), date);
+                    reportDescription.getText().toString(), formattedDate);
 
-            Log.i("Details Date", String.valueOf(date));
-//            dbRef.child(id).setValue(report);
-//            DatabaseHelper databaseHelper = new DatabaseHelper(getApplicationContext());
-//            databaseHelper.add(report);
+            Log.i("Details Date", String.valueOf(formattedDate));
+            dbRef.child(id).setValue(report);
 
-
+            goToReport();
         });
 
     }
@@ -288,11 +259,10 @@ public class DetailsActivity extends AppCompatActivity {
 //        File f = new File(absoluteFilePath);
 //        f.delete();
 
-        if (!isGallery) {
-            if (Objects.nonNull(singleMediaFile)) {
-                singleMediaFile.delete();
-            }
+        if (!isGallery && Objects.nonNull(singleMediaFile)) {
+            singleMediaFile.delete();
         }
+
         reportIntent = null;
         dataMap = null;
 
@@ -311,7 +281,7 @@ public class DetailsActivity extends AppCompatActivity {
                 response -> {
                     //empty
                     detailsProgressBar.setVisibility(View.GONE);
-                    goToReport();
+//                    goToReport();
                 }, error -> {
             Log.e("Request Error", String.valueOf(error));
             detailsProgressBar.setVisibility(View.GONE);
@@ -435,6 +405,20 @@ public class DetailsActivity extends AppCompatActivity {
     private void goToReport() {
         Intent reportIntent = new Intent(getApplicationContext(), ReportActivity.class);
         startActivity(reportIntent);
+    }
+
+    private void populateDate() {
+        final Calendar calendar = Calendar.getInstance();
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH);
+        int year = calendar.get(Calendar.YEAR);
+
+        dateText.setText(String.format(Locale.getDefault(), "%d-%d-%d", year, month + 1, day));
+        try {
+            date = dateFormat.parse(dateText.getText().toString());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     private class SendTextMessage extends AsyncTask {

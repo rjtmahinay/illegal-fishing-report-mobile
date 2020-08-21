@@ -42,7 +42,7 @@
             android:name=".report.DetailsActivity"
             android:label="@string/title_activity_details"
             android:parentActivityName=".report.ReportActivity"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+            android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar.Bridge" />
         <activity
             android:name=".report.ReportActivity"
             android:label="@string/title_activity_report"
