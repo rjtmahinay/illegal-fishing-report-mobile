@@ -103,7 +103,7 @@ public class DetailsActivity extends AppCompatActivity {
     private ProgressBar detailsProgressBar;
     private boolean isLastLocationNull;
     private boolean isGallery;
-    private DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault());
+    private DateFormat dateFormat;
 
 
     @Override
@@ -197,14 +197,13 @@ public class DetailsActivity extends AppCompatActivity {
 
 
             DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
-            String formattedDate = dateFormat.format(date);
 
             String id = dbRef.push().getKey();
             Report report
                     = new Report(id, nameView.getText().toString(), locationText.getText().toString(),
-                    reportDescription.getText().toString(), formattedDate);
+                    reportDescription.getText().toString(), date);
 
-            Log.i("Details Date", String.valueOf(formattedDate));
+            Log.i("Details Date", String.valueOf(date));
             dbRef.child(id).setValue(report);
 
             goToReport();

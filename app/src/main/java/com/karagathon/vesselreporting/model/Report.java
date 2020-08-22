@@ -1,19 +1,21 @@
 package com.karagathon.vesselreporting.model;
 
+import java.util.Date;
+
 public class Report {
 
     private String id;
     private String name;
     private String location;
     private String description;
-    private String formattedDate;
+    private Date date;
 
-    public Report(String id, String name, String location, String description, String formattedDate) {
+    public Report(String id, String name, String location, String description, Date date) {
         this.id = id;
         this.name = name;
         this.location = location;
         this.description = description;
-        this.formattedDate = formattedDate;
+        this.date = date;
     }
 
     public Report() {
@@ -39,8 +41,8 @@ public class Report {
     }
 
 
-    public String getFormattedDate() {
-        return formattedDate;
+    public Date getDate() {
+        return date;
     }
 
 }

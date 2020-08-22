@@ -19,7 +19,6 @@ import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.model.Report;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,6 +34,7 @@ public class HistoryActivity extends AppCompatActivity {
     private ListView listView;
     private ProgressBar progressBar;
     private List<Map<String, String>> dataList;
+    private DateFormat dateFormat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +42,12 @@ public class HistoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_history);
         dataList = new ArrayList<>();
         listView = findViewById(R.id.history_list);
-        progressBar = findViewById(R.id.history_progressbar);
 
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        progressBar = findViewById(R.id.history_progressbar);
         progressBar.setVisibility(View.VISIBLE);
+
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
         dbRef.orderByKey().addValueEventListener(new ValueEventListener() {
             @Override
@@ -85,25 +88,18 @@ public class HistoryActivity extends AppCompatActivity {
 
     private void collectData(Report report) {
         if (Objects.isNull(report)) return;
-        Date date;
-        String formattedParsedDate = "";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String formattedParsedDate;
 
         String id = report.getId();
         String location = report.getLocation();
-        String formattedDate = report.getFormattedDate();
+        Date formattedDate = report.getDate();
 
         Map<String, String> historyMap = new HashMap<>();
 
         if (Objects.nonNull(formattedDate)
                 && Objects.nonNull(location) && !location.isEmpty()) {
 
-            try {
-                date = dateFormat.parse(formattedDate);
-                formattedParsedDate = dateFormat.format(date);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            formattedParsedDate = dateFormat.format(formattedDate);
             Log.i("Parse Date", formattedParsedDate);
             Log.i("Location", location);
 
