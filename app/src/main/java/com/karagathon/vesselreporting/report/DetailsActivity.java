@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
+import com.amazonaws.util.StringUtils;
 import com.amplifyframework.AmplifyException;
 import com.amplifyframework.auth.cognito.AWSCognitoAuthPlugin;
 import com.amplifyframework.core.Amplify;
@@ -44,8 +45,11 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.karagathon.vesselreporting.BuildConfig;
 import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.adapter.PlacesAutoCompletedAdapter;
@@ -134,30 +138,9 @@ public class DetailsActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
 
         FirebaseUser currentUser = auth.getCurrentUser();
-        nameView.setText(currentUser.getDisplayName());
+        populateName(currentUser);
 
         populateDate();
-//        dateText.setOnClickListener(view -> {
-//            final Calendar cldr = Calendar.getInstance();
-//            int day = cldr.get(Calendar.DAY_OF_MONTH);
-//            int month = cldr.get(Calendar.MONTH);
-//            int year = cldr.get(Calendar.YEAR);
-//            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-//
-//            picker = new DatePickerDialog(DetailsActivity.this, R.style.Theme_MaterialComponents_Light_Dialog_FixedSize,
-//                    (datePicker, year1, month1, dayOfMonth)
-//                            -> {
-//                        dateText.setText(String.format(Locale.getDefault(),"%d-%d-%d", year1, month1 + 1, dayOfMonth));
-//                        try {
-//                            date = dateFormat.parse(dateText.getText().toString());
-//                        } catch (ParseException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }, year, month, day);
-//            picker.getDatePicker().setMinDate(cldr.getTimeInMillis());
-//            picker.show();
-//        });
-
 
         Places.initialize(getApplicationContext(), BuildConfig.GOOGLE_API_KEY);
 
@@ -184,7 +167,7 @@ public class DetailsActivity extends AppCompatActivity {
             reportIntent = getIntent();
             isGallery = reportIntent.getBooleanExtra("isGallery", false);
 
-            dataMap.put("name", currentUser.getDisplayName());
+            dataMap.put("name", nameView.getText().toString());
             dataMap.put("location", autoCompleteTextView.getEditableText().toString());
             dataMap.put("date", dateText.getText().toString());
             dataMap.put("description", reportDescription.getText().toString());
@@ -419,6 +402,32 @@ public class DetailsActivity extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+    }
+
+    private void populateName(FirebaseUser currentUser) {
+        if (!StringUtils.isBlank(currentUser.getDisplayName())) {
+            nameView.setText(currentUser.getDisplayName());
+            return;
+        }
+        Log.i("Retrieve name", "Retrieve name");
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("User");
+
+        dbRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                snapshot.getChildren().forEach(dataSnapshot -> {
+                    Map<String, Object> userMap = (Map<String, Object>) dataSnapshot.getValue();
+                    Map.Entry<String, Object> entry = userMap.entrySet().iterator().next();
+                    Log.i("Details Navigation User Value", String.valueOf(entry.getValue()));
+                    nameView.setText(String.valueOf(entry.getValue()));
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Database Error", error.getMessage());
+            }
+        });
     }
 
     private class SendTextMessage extends AsyncTask {

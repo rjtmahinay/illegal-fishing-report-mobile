@@ -23,6 +23,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.common.SettingsActivity;
 import com.karagathon.vesselreporting.login.LoginActivity;
@@ -31,6 +36,7 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class BaseNavigationActivity extends AppCompatActivity
@@ -43,6 +49,7 @@ public class BaseNavigationActivity extends AppCompatActivity
     private boolean authStateFlag;
     private ImageView image;
     private TextView navDisplayEmail;
+    private TextView navDisplayName;
 
     @Override
     protected void onStart() {
@@ -113,9 +120,8 @@ public class BaseNavigationActivity extends AppCompatActivity
         image = navigationView.getHeaderView(0).findViewById(R.id.nav_image);
         navDisplayEmail = navigationView.getHeaderView(0).findViewById(R.id.nav_display_email);
 
-        TextView navDisplayName = navigationView.getHeaderView(0).findViewById(R.id.nav_display_name);
+        navDisplayName = navigationView.getHeaderView(0).findViewById(R.id.nav_display_name);
         navDisplayName.setText(user.getDisplayName());
-
         TextView navLogout = findViewById(R.id.logout);
         navLogout.setOnClickListener(view -> {
 
@@ -152,11 +158,33 @@ public class BaseNavigationActivity extends AppCompatActivity
                 case "facebook.com":
                     requestData();
                     break;
+                default:
+                    retrieveName();
+                    navDisplayEmail.setText(user.getEmail());
             }
         });
     }
 
+    private void retrieveName() {
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("User");
+        dbRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                snapshot.getChildren().forEach(dataSnapshot -> {
+                    Map<String, Object> userMap = (Map<String, Object>) dataSnapshot.getValue();
+                    Map.Entry<String, Object> entry = userMap.entrySet().iterator().next();
+                    Log.i("Base Navigation User Value", String.valueOf(entry.getValue()));
 
+                    navDisplayName.setText(String.valueOf(entry.getValue()));
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                //
+            }
+        });
+    }
     @Override
     public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
         if (firebaseAuth.getCurrentUser() != null) {

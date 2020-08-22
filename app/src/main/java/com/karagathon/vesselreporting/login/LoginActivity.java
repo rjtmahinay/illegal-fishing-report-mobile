@@ -1,10 +1,12 @@
 package com.karagathon.vesselreporting.login;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,13 +38,14 @@ import java.util.Objects;
 public class LoginActivity extends AppCompatActivity {
 
     private static final int GOOGLE_SIGN_IN = 10;
-    //    private LoginViewModel loginViewModel;
     private GoogleSignInClient googleSignClient;
     private FirebaseAuth auth;
     private CallbackManager callbackManager;
     private String FACEBOOK_TAG = "Facebook Authentication";
     private AccessTokenTracker accessTokenTracker;
     private ProgressBar progressBar;
+    private EditText emailText;
+    private EditText passwordText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,11 +57,16 @@ public class LoginActivity extends AppCompatActivity {
         callbackManager = CallbackManager.Factory.create();
         final LoginButton facebookSignInButton = findViewById(R.id.facebook_login);
         facebookSignInButton.setPermissions("email", "public_profile");
+        final Button goButton = findViewById(R.id.go_button);
+        final Button newUserButton = findViewById(R.id.new_user_button);
+
+        emailText = findViewById(R.id.login_email);
+        passwordText = findViewById(R.id.login_password);
 
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
 
-
+        signInUsingEmailPassword(goButton);
         signInUsingGoogle(googleSignInButton);
         signInUsingFacebook(facebookSignInButton);
 
@@ -70,10 +78,36 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         };
-//        final Button loginButton = findViewById(R.id.login);
-//        final ProgressBar loadingProgressBar = findViewById(R.id.loading);
 
+        newUserButton.setOnClickListener(view -> {
+            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+            startActivity(intent);
+        });
+    }
 
+    private void signInUsingEmailPassword(Button goButton) {
+        goButton.setOnClickListener(view -> {
+            String email = emailText.getText().toString();
+            String password = passwordText.getText().toString();
+            progressBar.setVisibility(View.VISIBLE);
+            auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    Log.i("LoginActivity", "Email and Pass Success");
+                    progressBar.setVisibility(View.GONE);
+                    goToReport();
+                } else {
+                    Log.i("LoginActivity", "Email and Pass Failed");
+                    progressBar.setVisibility(View.GONE);
+                    AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
+                    alertDialog.setTitle("Credentials Incorrect");
+                    alertDialog.setMessage("Email or password is incorrect");
+                    alertDialog.show();
+
+                    emailText.setText(null);
+                    passwordText.setText(null);
+                }
+            });
+        });
     }
 
     private void signInUsingGoogle(Button googleSignInButton) {
@@ -100,7 +134,6 @@ public class LoginActivity extends AppCompatActivity {
                 goToReport();
 
             }
-
             @Override
             public void onCancel() {
                 Log.i(FACEBOOK_TAG, "Cancel");
@@ -113,14 +146,6 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    // to be deleted
-//    private void signInUsingEmail(Button emailButton) {
-//        emailButton.setOnClickListener(view -> {
-//            Intent emailIntent = new Intent(getApplicationContext(), SignUpActivity.class);
-//            startActivity(emailIntent);
-//        });
-//    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -130,6 +155,12 @@ public class LoginActivity extends AppCompatActivity {
         if (Objects.nonNull(user)) {
             goToReport();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        moveTaskToBack(true);
     }
 
     private void signInToGoogle() {
@@ -187,18 +218,12 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
 
                     if (task.isSuccessful()) {
-                        // Sign in success, update UI with the signed-in user's information
                         Log.d("Firebase Sign In", "signInWithCredential:success");
                         FirebaseUser user = auth.getCurrentUser();
 
                         Log.i("CURRENT USER", user.getDisplayName());
-
-//                        updateUI(user);
                     } else {
-                        // If sign in fails, display a message to the user.
                         Log.w("Firebase Sign In", "signInWithCredential:failure", task.getException());
-//                        Snackbar.make(mBinding.mainLayout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
-//                        updateUI(null);
                     }
                 });
     }

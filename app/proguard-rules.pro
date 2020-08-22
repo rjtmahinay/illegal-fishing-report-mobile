@@ -20,9 +20,9 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-#-keepattributes Signature
-#-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes *Annotation*
 
--keepclassmembers class com.karagathon.vesselreporting.model.** {
+-keepclassmembers class com.karagathon.vesselreporting.model.*{
   *;
 }

@@ -40,10 +40,9 @@ import java.util.Objects;
 public class ReportActivity extends BaseNavigationActivity {
     private static final int MEDIA_REQUEST_CODE = 1;
     private static final int GALLERY_REQUEST_CODE = 2;
-    private static final String DETAILS_URL = "http://192.168.0.109:1331/reportDetails";
     private int flag;
     private String absoluteFilePath;
-    private Button photoCaptureButton, videoCaptureButton, submitButton, galleryButton;
+    private Button photoCaptureButton, videoCaptureButton, galleryButton;
     private LocalDateTime dateTime = LocalDateTime.now();
     private DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
     private List<String> galleryDataPaths;
@@ -129,6 +128,11 @@ public class ReportActivity extends BaseNavigationActivity {
         return null;
     }
 
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+
     private void askCameraPermission() {
         String[] askPermissions = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
@@ -156,7 +160,7 @@ public class ReportActivity extends BaseNavigationActivity {
                 Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 File photoFile = photoFile = createFile(FileType.PICTURE);
 
-                if (notNull(photoFile)) {
+                if (Objects.nonNull(photoFile)) {
                     photoIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
                 }
 
@@ -166,7 +170,7 @@ public class ReportActivity extends BaseNavigationActivity {
                 Intent videoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 File videoFile = createFile(FileType.VIDEO);
 
-                if (notNull(videoFile)) {
+                if (Objects.nonNull(videoFile)) {
                     videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(videoFile));
                 }
                 startActivityForResult(videoIntent, MEDIA_REQUEST_CODE);
@@ -214,9 +218,6 @@ public class ReportActivity extends BaseNavigationActivity {
         return file;
     }
 
-    public static boolean isMediaDocument(Uri uri) {
-        return "com.android.providers.media.documents".equals(uri.getAuthority());
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -274,7 +275,6 @@ public class ReportActivity extends BaseNavigationActivity {
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                 && grantResults[1] == PackageManager.PERMISSION_GRANTED
                 && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-            Log.i("On Request Permissions", "Inside On Request Permissions");
             openCamera();
         }
         if (requestCode == GALLERY_REQUEST_CODE) {
@@ -306,7 +306,7 @@ public class ReportActivity extends BaseNavigationActivity {
             intent.putExtra("isGallery", true);
             ClipData clipData = data.getClipData();
             Log.i("ClipData", String.valueOf(clipData));
-            if (notNull(clipData)) {
+            if (Objects.nonNull(clipData)) {
                 for (int i = 0; i < clipData.getItemCount(); i++) {
                     Log.i("Path from URI" + i, getPathFromUri(getApplicationContext(), clipData.getItemAt(i).getUri()));
                     galleryDataPaths.add(getPathFromUri(getApplicationContext(), clipData.getItemAt(i).getUri()));
@@ -354,10 +354,4 @@ public class ReportActivity extends BaseNavigationActivity {
 
         alertDialog.show();
     }
-
-
-    private boolean notNull(Object o) {
-        return Objects.nonNull(o);
-    }
-
 }
