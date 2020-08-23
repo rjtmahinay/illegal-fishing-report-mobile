@@ -2,14 +2,12 @@ package com.karagathon.vesselreporting.report;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -63,8 +61,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -78,22 +74,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-import cz.msebera.android.httpclient.NameValuePair;
-import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
-import cz.msebera.android.httpclient.client.methods.CloseableHttpResponse;
-import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.impl.client.CloseableHttpClient;
-import cz.msebera.android.httpclient.impl.client.HttpClients;
-import cz.msebera.android.httpclient.message.BasicNameValuePair;
-
 public class DetailsActivity extends AppCompatActivity {
 
     private static final String UPLOAD_URL = "http://192.168.0.109:1331/upload";
-    private static final String TEXT_MESSAGE_API_URL = "https://api.semaphore.co/api/v4/messages";
     private static final int LOCATION_REQ_CODE = 3;
     private EditText locationText, reportDescription;
     private Button submitButton;
-    private DatePickerDialog picker;
     private Intent reportIntent;
     private HashMap<String, Object> dataMap;
     private File singleMediaFile;
@@ -198,10 +184,6 @@ public class DetailsActivity extends AppCompatActivity {
                 uploadData(dataMap);
             }
 
-            //send sms
-            Log.i("Sending a Message Now!", "Sending a Message Now!");
-//           new SendTextMessage().execute();
-
             retrieveEmail();
             DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
 
@@ -245,8 +227,6 @@ public class DetailsActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.i("On Destroy", "On Destroy");
-//        File f = new File(absoluteFilePath);
-//        f.delete();
 
         if (!isGallery && Objects.nonNull(singleMediaFile)) {
             singleMediaFile.delete();
@@ -472,38 +452,4 @@ public class DetailsActivity extends AppCompatActivity {
         request.setParameters(parameters);
         request.executeAsync();
     }
-
-    private class SendTextMessage extends AsyncTask {
-
-        @Override
-        protected Object doInBackground(Object[] objects) {
-            sendSMS();
-            return null;
-        }
-
-        private void sendSMS() {
-            HttpPost post = new HttpPost(TEXT_MESSAGE_API_URL);
-
-            String message = "Hi from Android";
-            // add request parameter, form parameters
-            List<NameValuePair> urlParameters = new ArrayList<>();
-            urlParameters.add(new BasicNameValuePair("apikey", BuildConfig.SEMAPHORE_API_KEY));
-            urlParameters.add(new BasicNameValuePair("number", "09272697150"));
-            urlParameters.add(new BasicNameValuePair("message", message));
-
-            try {
-                post.setEntity(new UrlEncodedFormEntity(urlParameters));
-
-                CloseableHttpClient httpClient = HttpClients.createDefault();
-                CloseableHttpResponse response = httpClient.execute(post);
-                Log.i("Send SMS", String.valueOf(response));
-
-            } catch (UnsupportedEncodingException ue) {
-                Log.e("Unsupported Exception", ue.getLocalizedMessage());
-            } catch (IOException ie) {
-                Log.e("IOException", ie.getLocalizedMessage());
-            }
-        }
-    }
-
 }
