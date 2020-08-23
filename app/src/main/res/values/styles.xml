@@ -1,28 +1,51 @@
 <resources>
-    <!-- Base application theme. -->
-    <style name="LoginTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <!--        <item name="colorPrimary">@color/colorPrimary</item>-->
-        <!--        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
-        <!--        <item name="colorAccent">@color/colorAccent</item>-->
+
+    <style name="ForgotPasswordTheme" parent="@style/Theme.MaterialComponents.Light.DarkActionBar.Bridge">
+        <item name="colorPrimary">@color/colorOceanBlue</item>
+        <item name="android:indeterminateTint">@color/progressBarColor</item>
     </style>
 
-    <style name="FlatButton" parent="Theme.AppCompat.Light"></style>
+    <style name="DetailsTheme" parent="@style/Theme.MaterialComponents.Light.DarkActionBar.Bridge">
+        <item name="colorPrimary">@color/colorOceanBlue</item>
+        <item name="android:windowBackground">@color/quantum_white_100</item>
+        <item name="android:indeterminateTint">@color/progressBarColor</item>
+    </style>
 
-    <style name="ReportTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="HistoryTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorOceanBlue</item>
+        <item name="android:windowBackground">@color/quantum_white_100</item>
+        <item name="android:indeterminateTint">@color/progressBarColor</item>
+    </style>
 
-        <!-- Customize your theme here. -->
-        <!--        <item name="colorPrimary">@color/colorPrimary</item>-->
-        <!--        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
-        <!--        <item name="colorAccent">@color/colorAccent</item>-->
-        <!--        <item name="colorPrimary">@color/colorPrimary</item>-->
-        <!--        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
-        <!--        <item name="colorAccent">@color/colorAccent</item>-->
+    <style name="SettingsTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorOceanBlue</item>
+        <item name="colorAccent">@color/colorOceanBlueAccent</item>
+        <item name="android:windowBackground">@color/quantum_white_100</item>
+    </style>
+
+    <style name="BaseNavigationTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorOceanBlue</item>
+        <item name="android:windowBackground">@color/quantum_white_100</item>
+    </style>
+
+    <style name="ReportTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorOceanBlue</item>
+        <item name="android:windowBackground">@color/quantum_white_100</item>
     </style>
 
     <style name="ReportTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="error_appearance" parent="Widget.Design.TextInputLayout">
+        <item name="android:textColor">@color/errorColor</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="LoginTheme" parent="@style/Theme.MaterialComponents.Light.NoActionBar.Bridge">
+        <item name="colorPrimary">@color/colorOceanBlue</item>
+        <item name="android:indeterminateTint">@color/progressBarColor</item>
     </style>
 </resources>

@@ -6,6 +6,7 @@
     <string name="title_activity_details">Details</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_signup_activity">Sign Up</string>
+    <string name="title_forgot_password">Forgot Password</string>
     <string name="facebook_app_id">372098053775533</string>
     <string name="fb_login_protocol_scheme">fb372098053775533</string>
     <string name="sign_in_google">Continue with Google</string>
@@ -26,5 +27,6 @@
     <string name="item_logout">Logout</string>
     <string name="item_history">History</string>
     <string name="item_settings">Settings</string>
+    <string name="applicaton_name">OReport</string>
 
 </resources>

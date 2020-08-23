@@ -19,12 +19,24 @@
 
         <Button
             android:id="@+id/video"
-            android:layout_width="226dp"
-            android:layout_height="72dp"
+            android:layout_width="111dp"
+            android:layout_height="97dp"
             android:layout_gravity="center"
-            android:text="Record Video"
+            android:background="@drawable/ic_video"
+            android:backgroundTint="@color/colorOceanBlue"
             android:textAlignment="center"
+            android:textColor="@color/quantum_white_100"
             android:textSize="12.5dp" />
+
+        <TextView
+            android:id="@+id/report_video_text"
+            android:layout_width="111dp"
+            android:layout_height="31dp"
+            android:layout_gravity="center"
+            android:fontFamily="sans-serif-condensed-medium"
+            android:gravity="center"
+            android:text="Record Video"
+            android:textColor="@color/quantum_grey500" />
 
         <View
             android:layout_width="0dp"
@@ -34,23 +46,49 @@
 
         <Button
             android:id="@+id/photo"
-            android:layout_width="230dp"
-            android:layout_height="74dp"
+            android:layout_width="111dp"
+            android:layout_height="97dp"
             android:layout_gravity="center"
-            android:text="Take Photo"
+            android:background="@drawable/ic_camera"
+            android:backgroundTint="@color/colorOceanBlue"
+            android:textColor="@color/quantum_white_100"
             android:textSize="12.5dp" />
+
+        <TextView
+            android:id="@+id/report_photo_text"
+            android:layout_width="111dp"
+            android:layout_height="31dp"
+            android:layout_gravity="center"
+            android:fontFamily="sans-serif-condensed-medium"
+            android:gravity="center"
+            android:text="Take Photo"
+            android:textColor="@color/quantum_grey500" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_weight="1" />
+
         <Button
             android:id="@+id/gallery"
-            android:layout_width="233dp"
-            android:layout_height="70dp"
+            android:layout_width="111dp"
+            android:layout_height="97dp"
             android:layout_gravity="center"
-            android:text="Upload from gallery"
+            android:background="@drawable/ic_gallery"
+            android:backgroundTint="@color/colorOceanBlue"
+            android:textColor="@color/quantum_white_100"
             android:textSize="12.5dp" />
+
+        <TextView
+            android:id="@+id/report_upload_text"
+            android:layout_width="111dp"
+            android:layout_height="31dp"
+            android:layout_gravity="center"
+            android:fontFamily="sans-serif-condensed-medium"
+            android:gravity="center"
+            android:text="Upload from Gallery"
+            android:textColor="@color/quantum_grey500" />
+
 
     </LinearLayout>
 </RelativeLayout>

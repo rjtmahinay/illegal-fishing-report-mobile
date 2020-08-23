@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -31,6 +32,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.constant.AuthProviders;
+import com.karagathon.vesselreporting.helper.FieldVerificationHelper;
 import com.karagathon.vesselreporting.report.ReportActivity;
 
 import java.util.Objects;
@@ -38,6 +40,8 @@ import java.util.Objects;
 public class LoginActivity extends AppCompatActivity {
 
     private static final int GOOGLE_SIGN_IN = 10;
+    public static final int FORGOT_PASS_REQ_CODE = 20;
+    public static final int NEW_USER_REQ_CODE = 30;
     private GoogleSignInClient googleSignClient;
     private FirebaseAuth auth;
     private CallbackManager callbackManager;
@@ -46,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private EditText emailText;
     private EditText passwordText;
+    private TextView emailErrorText, passwordErrorText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,12 +64,16 @@ public class LoginActivity extends AppCompatActivity {
         facebookSignInButton.setPermissions("email", "public_profile");
         final Button goButton = findViewById(R.id.go_button);
         final Button newUserButton = findViewById(R.id.new_user_button);
+        final Button forgotPasswordButton = findViewById(R.id.login_forgot_password);
 
         emailText = findViewById(R.id.login_email);
         passwordText = findViewById(R.id.login_password);
+        emailErrorText = findViewById(R.id.email_error_view);
+        passwordErrorText = findViewById(R.id.password_error_view);
 
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
+
 
         signInUsingEmailPassword(goButton);
         signInUsingGoogle(googleSignInButton);
@@ -79,24 +88,36 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
 
+        forgotPasswordButton.setOnClickListener(view -> {
+            Intent intent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
+
+            startActivityForResult(intent, FORGOT_PASS_REQ_CODE);
+        });
+
         newUserButton.setOnClickListener(view -> {
             Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, NEW_USER_REQ_CODE);
         });
+
+
     }
 
     private void signInUsingEmailPassword(Button goButton) {
+
+
         goButton.setOnClickListener(view -> {
             String email = emailText.getText().toString();
             String password = passwordText.getText().toString();
+
+            if (!isSuccessValidation(email, password))
+                return;
+
             progressBar.setVisibility(View.VISIBLE);
             auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
                 if (task.isSuccessful()) {
-                    Log.i("LoginActivity", "Email and Pass Success");
                     progressBar.setVisibility(View.GONE);
                     goToReport();
                 } else {
-                    Log.i("LoginActivity", "Email and Pass Failed");
                     progressBar.setVisibility(View.GONE);
                     AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
                     alertDialog.setTitle("Credentials Incorrect");
@@ -128,7 +149,6 @@ public class LoginActivity extends AppCompatActivity {
         facebookSignInButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                Log.i(FACEBOOK_TAG, "Sucesss " + loginResult);
                 fireBaseAuth(loginResult.getAccessToken().getToken(), AuthProviders.FACEBOOK);
                 progressBar.setVisibility(View.VISIBLE);
                 goToReport();
@@ -149,9 +169,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i("On Start", "On Start Application");
         FirebaseUser user = auth.getCurrentUser();
-        Log.i("On Start User", String.valueOf(user));
         if (Objects.nonNull(user)) {
             goToReport();
         }
@@ -178,25 +196,27 @@ public class LoginActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == GOOGLE_SIGN_IN && resultCode == RESULT_OK) {
-            Log.i("Google Sign In", "Result Ok");
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
-                // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                Log.d("Log Activity Result", "firebaseAuthWithGoogle:" + account.getId());
                 fireBaseAuth(account.getIdToken(), AuthProviders.GOOGLE);
                 progressBar.setVisibility(View.VISIBLE);
-                Intent reportIntent = new Intent(getApplicationContext(), ReportActivity.class);
-                startActivity(reportIntent);
+                goToReport();
             } catch (ApiException e) {
-                // Google Sign In failed, update UI appropriately
                 Log.e("Login Activity Result Exception", e.getLocalizedMessage());
-                // ...
             }
         }
 
+        if (requestCode == FORGOT_PASS_REQ_CODE) {
+            //Scenario if there is an error before going to forgot password
+            removeErrorMessage();
+        }
+
+        if (requestCode == NEW_USER_REQ_CODE) {
+            //Scenario if there is an error before going to forgot password
+            removeErrorMessage();
+        }
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -218,14 +238,35 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
 
                     if (task.isSuccessful()) {
-                        Log.d("Firebase Sign In", "signInWithCredential:success");
-                        FirebaseUser user = auth.getCurrentUser();
-
-                        Log.i("CURRENT USER", user.getDisplayName());
+                        //
                     } else {
                         Log.w("Firebase Sign In", "signInWithCredential:failure", task.getException());
                     }
                 });
     }
 
+
+    private boolean isSuccessValidation(String email, String password) {
+        boolean result = true;
+        if (Objects.isNull(email)
+                || email.isEmpty() || !FieldVerificationHelper.isEmailPatternValid(email)) {
+            emailErrorText.setHint("Invalid email");
+            result = false;
+        } else {
+            emailErrorText.setHint(null);
+        }
+
+        if (Objects.isNull(password) || password.isEmpty()) {
+            passwordErrorText.setHint("Password must not be blank");
+            result = false;
+        } else {
+            passwordErrorText.setHint(null);
+        }
+        return result;
+    }
+
+    private void removeErrorMessage() {
+        emailErrorText.setHint(null);
+        passwordErrorText.setHint(null);
+    }
 }

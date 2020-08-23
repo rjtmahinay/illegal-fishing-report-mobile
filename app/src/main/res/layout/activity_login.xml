@@ -5,58 +5,104 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/design_default_color_on_primary"
+    android:background="@color/quantum_white_100"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".login.LoginActivity">
 
+    <ImageView
+        android:id="@+id/splash_logo"
+        android:layout_width="103dp"
+        android:layout_height="77dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:contentDescription="logo"
+        android:src="@drawable/report" />
+
+
+    <TextView
+        android:id="@+id/welcome_text"
+        android:layout_width="331dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/splash_logo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="-42dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="Sign In to Continue"
+        android:textSize="15sp" />
 
     <LinearLayout
         android:id="@+id/email_pass"
         android:layout_width="match_parent"
-        android:layout_height="214dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="60dp"
+        android:layout_height="247dp"
+        android:layout_alignTop="@id/welcome_text"
+        android:layout_marginTop="30dp"
         android:orientation="vertical">
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="337dp"
+            android:layout_width="330dp"
             android:layout_height="60dp"
             android:layout_gravity="center"
-            android:layout_marginBottom="15dp"
             android:hint="Email">
 
             <EditText
                 android:id="@+id/login_email"
-                android:layout_width="337dp"
-                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
-                android:textSize="15sp" />
+                android:textSize="13.5sp" />
+
         </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/email_error_view"
+            android:layout_width="330dp"
+            android:layout_height="15dp"
+            android:layout_marginStart="15sp"
+            android:textColorHint="@color/errorColor" />
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="337dp"
+            android:layout_width="330dp"
             android:layout_height="60dp"
             android:layout_gravity="center"
+            android:layout_marginTop="5dp"
             android:hint="Password"
+            app:errorTextAppearance="@style/error_appearance"
             app:passwordToggleEnabled="true">
 
             <EditText
                 android:id="@+id/login_password"
-                android:layout_width="337dp"
-                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:inputType="textPassword"
-                android:textSize="15sp" />
+                android:textSize="13.5sp" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/password_error_view"
+            android:layout_width="333dp"
+            android:layout_height="15dp"
+            android:layout_marginStart="15sp"
+            android:textColorHint="@color/errorColor" />
+
+        <Button
+            android:id="@+id/login_forgot_password"
+            android:layout_width="135dp"
+            android:layout_height="26dp"
+            android:layout_gravity="right"
+            android:background="@android:color/transparent"
+            android:text="Forgot Password?"
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/go_button"
-            android:layout_width="180dp"
+            android:layout_width="323dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="15dp"
+            android:layout_marginBottom="5dp"
             android:background="@color/colorOceanBlue"
             android:text="LOGIN"
             android:textAllCaps="false"
@@ -68,10 +114,10 @@
     <RelativeLayout
         android:id="@+id/horizontal_label"
         android:layout_width="match_parent"
-        android:layout_height="18dp"
+        android:layout_height="46dp"
         android:layout_alignBottom="@id/email_pass"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="-26dp"
+        android:layout_marginBottom="-35dp"
         android:orientation="horizontal">
 
         <TextView
@@ -104,21 +150,21 @@
     <LinearLayout
         android:id="@+id/social_buttons"
         android:layout_width="match_parent"
-        android:layout_height="251dp"
+        android:layout_height="162dp"
         android:layout_alignTop="@id/horizontal_label"
         android:layout_alignParentBottom="true"
-        android:layout_marginTop="29dp"
+        android:layout_marginTop="31dp"
         android:layout_marginBottom="62dp"
         android:orientation="vertical">
 
         <Button
             android:id="@+id/google_login"
-            android:layout_width="318dp"
+            android:layout_width="312dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
-            android:background="@mipmap/btn_google_signin_light_normal_hdpi"
+            android:background="@drawable/btn_google_signin_light_normal_mdpi"
             android:text="@string/sign_in_google"
             android:textAllCaps="false"
             android:textColor="@color/quantum_grey600" />
@@ -136,6 +182,7 @@
             app:com_facebook_login_text="@string/sign_in_facebook"
             app:com_facebook_logout_text="@string/sign_in_facebook" />
 
+
     </LinearLayout>
 
     <ProgressBar
@@ -149,11 +196,11 @@
     <Button
         android:id="@+id/new_user_button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:layout_alignParentBottom="true"
+        android:layout_marginBottom="-1dp"
         android:background="@android:color/transparent"
         android:text="New User? Sign Up"
         android:textAllCaps="false" />
-
 
 </RelativeLayout>

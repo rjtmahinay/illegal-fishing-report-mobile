@@ -74,7 +74,8 @@ public class BaseNavigationActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.nav_drawer_open, R.string.nav_drawer_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout,
+                toolbar, R.string.nav_drawer_open, R.string.nav_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
     }
@@ -95,7 +96,8 @@ public class BaseNavigationActivity extends AppCompatActivity
         switch (itemId) {
             case R.id.item_history:
                 Log.i("Item History", "Item History");
-                Intent historyIntent = new Intent(BaseNavigationActivity.this, HistoryActivity.class);
+                Intent historyIntent =
+                        new Intent(BaseNavigationActivity.this, HistoryActivity.class);
                 startActivity(historyIntent);
                 break;
             case R.id.item_settings:
@@ -121,7 +123,6 @@ public class BaseNavigationActivity extends AppCompatActivity
         navDisplayEmail = navigationView.getHeaderView(0).findViewById(R.id.nav_display_email);
 
         navDisplayName = navigationView.getHeaderView(0).findViewById(R.id.nav_display_name);
-        navDisplayName.setText(user.getDisplayName());
         TextView navLogout = findViewById(R.id.logout);
         navLogout.setOnClickListener(view -> {
 
@@ -145,6 +146,8 @@ public class BaseNavigationActivity extends AppCompatActivity
 //                Log.i("User Info", u.getEmail());
         });
         user.getProviderData().forEach(u -> {
+            Log.i("Base Navigation Provider ID", u.getProviderId());
+
             switch (u.getProviderId()) {
                 case "google.com":
                     GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
@@ -153,12 +156,14 @@ public class BaseNavigationActivity extends AppCompatActivity
                             .placeholder(R.drawable.ic_person)
                             .into(image);
                     Log.i("Google Email", account.getEmail());
+                    navDisplayName.setText(account.getDisplayName());
                     navDisplayEmail.setText(account.getEmail());
                     break;
                 case "facebook.com":
+                    navDisplayName.setText(user.getDisplayName());
                     requestData();
                     break;
-                default:
+                case "password":
                     retrieveName();
                     navDisplayEmail.setText(user.getEmail());
             }
@@ -166,6 +171,7 @@ public class BaseNavigationActivity extends AppCompatActivity
     }
 
     private void retrieveName() {
+        Log.i("Base Navigation Inside Retrieve Name", "Base Navigation Inside Retrieve Name");
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("User");
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override

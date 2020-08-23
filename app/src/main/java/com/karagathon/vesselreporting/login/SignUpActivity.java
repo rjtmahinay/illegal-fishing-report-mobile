@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,11 +14,18 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.karagathon.vesselreporting.R;
+import com.karagathon.vesselreporting.helper.FieldVerificationHelper;
+
+import java.util.Objects;
 
 
 public class SignUpActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
+    private TextView emailErrorTextView;
+    private TextView passwordErrorTextView;
+    private TextView nameErrorTextView;
+    private String name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +37,9 @@ public class SignUpActivity extends AppCompatActivity {
         final EditText signUpPassword = findViewById(R.id.sign_up_password);
         final Button signUpSubmitButton = findViewById(R.id.sign_up_submit_button);
         final Button goToLoginButton = findViewById(R.id.go_to_login_button);
+        emailErrorTextView = findViewById(R.id.sign_up_email_error);
+        passwordErrorTextView = findViewById(R.id.sign_up_password_error);
+        nameErrorTextView = findViewById(R.id.sign_up_name_error);
 
         progressBar = findViewById(R.id.signup_progressBar);
         progressBar.setVisibility(View.GONE);
@@ -38,7 +49,6 @@ public class SignUpActivity extends AppCompatActivity {
         signUpSubmitButton.setOnClickListener(view -> {
             String email = signUpEmail.getText().toString();
             String password = signUpPassword.getText().toString();
-            progressBar.setVisibility(View.VISIBLE);
             createCredentials(auth, signUpName, email, password);
         });
 
@@ -48,12 +58,14 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void createCredentials(FirebaseAuth auth, EditText signUpName, String email, String password) {
+        name = signUpName.getText().toString();
+        if (!isSuccessValidation(name, email, password)) return;
+        progressBar.setVisibility(View.VISIBLE);
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("User");
                         String id = dbRef.push().getKey();
-                        String name = signUpName.getText().toString();
 
                         dbRef.child(id).child("name").setValue(name);
                         progressBar.setVisibility(View.GONE);
@@ -68,5 +80,32 @@ public class SignUpActivity extends AppCompatActivity {
         Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private boolean isSuccessValidation(String name, String email, String password) {
+        boolean result = true;
+
+        if (Objects.isNull(name) || name.isEmpty()) {
+            nameErrorTextView.setHint("Name must not be blank");
+            result = false;
+        } else {
+            nameErrorTextView.setHint(null);
+        }
+
+        if (Objects.isNull(email)
+                || email.isEmpty() || !FieldVerificationHelper.isEmailPatternValid(email)) {
+            emailErrorTextView.setHint("Invalid email");
+            result = false;
+        } else {
+            emailErrorTextView.setHint(null);
+        }
+
+        if (Objects.isNull(password) || password.isEmpty()) {
+            passwordErrorTextView.setHint("Password must not be blank");
+            result = false;
+        } else {
+            passwordErrorTextView.setHint(null);
+        }
+        return result;
     }
 }

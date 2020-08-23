@@ -17,38 +17,42 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="OBytes Reporting"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/ic_obytes_launcher"
+        android:label="@string/applicaton_name"
+        android:roundIcon="@mipmap/ic_obytes_launcher"
         android:supportsRtl="true">
-
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
         <activity
+            android:name=".login.ForgotPasswordActivity"
+            android:label="@string/title_forgot_password"
+            android:parentActivityName=".login.LoginActivity"
+            android:theme="@style/ForgotPasswordTheme" />
+        <activity
             android:name=".login.SignUpActivity"
             android:label="@string/title_signup_activity"
             android:parentActivityName=".login.LoginActivity"
-            android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar.Bridge" />
+            android:theme="@style/LoginTheme" />
         <activity
             android:name=".common.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".report.ReportActivity"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+            android:theme="@style/SettingsTheme" />
         <activity
             android:name=".report.HistoryActivity"
             android:label="@string/title_activity_history"
             android:parentActivityName=".report.ReportActivity"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+            android:theme="@style/HistoryTheme" />
         <activity
             android:name=".report.BaseNavigationActivity"
-            android:theme="@style/ReportTheme.NoActionBar" />
+            android:theme="@style/BaseNavigationTheme" />
         <activity
             android:name=".report.DetailsActivity"
             android:label="@string/title_activity_details"
             android:parentActivityName=".report.ReportActivity"
-            android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar.Bridge" />
+            android:theme="@style/DetailsTheme" />
         <activity
             android:name=".report.ReportActivity"
             android:label="@string/title_activity_report"
@@ -56,10 +60,13 @@
         <activity
             android:name=".login.LoginActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar.Bridge">
+            android:theme="@style/LoginTheme">
 
             <!-- android:theme="@style/Theme.AppCompat.Light.NoActionBar"> -->
-
+        </activity>
+        <activity
+            android:name=".main.MainActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

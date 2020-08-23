@@ -6,7 +6,7 @@
     tools:context=".common.SettingsActivity">
 
     <FrameLayout
-        android:id="@+id/settings_framgent_container"
+        android:id="@+id/settings_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </LinearLayout>

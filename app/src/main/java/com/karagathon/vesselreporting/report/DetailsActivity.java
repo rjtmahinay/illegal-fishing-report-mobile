@@ -35,6 +35,10 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -55,6 +59,7 @@ import com.karagathon.vesselreporting.R;
 import com.karagathon.vesselreporting.adapter.PlacesAutoCompletedAdapter;
 import com.karagathon.vesselreporting.model.Report;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -94,6 +99,7 @@ public class DetailsActivity extends AppCompatActivity {
     private File singleMediaFile;
     private TextView nameView, dateText;
     private FirebaseAuth auth;
+    private FirebaseUser currentUser;
     private PlacesAutoCompletedAdapter adapter;
     private AutoCompleteTextView autoCompleteTextView;
     private Date date;
@@ -104,6 +110,7 @@ public class DetailsActivity extends AppCompatActivity {
     private boolean isLastLocationNull;
     private boolean isGallery;
     private DateFormat dateFormat;
+    private String userEmail;
 
 
     @Override
@@ -137,8 +144,8 @@ public class DetailsActivity extends AppCompatActivity {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         auth = FirebaseAuth.getInstance();
 
-        FirebaseUser currentUser = auth.getCurrentUser();
-        populateName(currentUser);
+        currentUser = auth.getCurrentUser();
+        populateName();
 
         populateDate();
 
@@ -148,8 +155,8 @@ public class DetailsActivity extends AppCompatActivity {
         autoCompleteTextView.setThreshold(3);
 
         RectangularBounds bounds = RectangularBounds.newInstance(
-                new LatLng(4.2158064, 114.0952145),
-                new LatLng(21.3217806, 126.8072562));
+                new LatLng(4.588889, 116.65),
+                new LatLng(21.113056, 126.604444));
 
         adapter = new PlacesAutoCompletedAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, bounds);
 
@@ -195,13 +202,13 @@ public class DetailsActivity extends AppCompatActivity {
             Log.i("Sending a Message Now!", "Sending a Message Now!");
 //           new SendTextMessage().execute();
 
-
+            retrieveEmail();
             DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
 
             String id = dbRef.push().getKey();
             Report report
                     = new Report(id, nameView.getText().toString(), locationText.getText().toString(),
-                    reportDescription.getText().toString(), date);
+                    reportDescription.getText().toString(), userEmail, date);
 
             Log.i("Details Date", String.valueOf(date));
             dbRef.child(id).setValue(report);
@@ -403,7 +410,7 @@ public class DetailsActivity extends AppCompatActivity {
         }
     }
 
-    private void populateName(FirebaseUser currentUser) {
+    private void populateName() {
         if (!StringUtils.isBlank(currentUser.getDisplayName())) {
             nameView.setText(currentUser.getDisplayName());
             return;
@@ -427,6 +434,43 @@ public class DetailsActivity extends AppCompatActivity {
                 Log.e("Database Error", error.getMessage());
             }
         });
+    }
+
+    private void retrieveEmail() {
+        currentUser.getProviderData().forEach(u -> {
+            Log.i("Base Navigation Provider ID", u.getProviderId());
+
+            switch (u.getProviderId()) {
+                case "google.com":
+                    GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+                    userEmail = account.getEmail();
+                    break;
+                case "facebook.com":
+                    requestData();
+                    break;
+                case "password":
+                    userEmail = currentUser.getEmail();
+            }
+        });
+    }
+
+    private void requestData() {
+        GraphRequest request = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), (object, response) -> {
+            JSONObject json = response.getJSONObject();
+            try {
+                if (Objects.nonNull(json)) {
+                    String email = object.getString("email");
+                    userEmail = email;
+                }
+
+            } catch (JSONException e) {
+                Log.e("Request Data JSON Exception", e.getMessage());
+            }
+        });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "email");
+        request.setParameters(parameters);
+        request.executeAsync();
     }
 
     private class SendTextMessage extends AsyncTask {
