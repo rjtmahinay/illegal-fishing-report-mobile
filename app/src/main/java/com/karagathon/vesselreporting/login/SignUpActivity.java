@@ -1,15 +1,16 @@
 package com.karagathon.vesselreporting.login;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -22,24 +23,23 @@ import java.util.Objects;
 public class SignUpActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
-    private TextView emailErrorTextView;
-    private TextView passwordErrorTextView;
-    private TextView nameErrorTextView;
     private String name;
+    private String email;
+    private String password;
+    private TextInputLayout signUpName;
+    private TextInputLayout signUpEmail;
+    private TextInputLayout signUpPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
-        final EditText signUpName = findViewById(R.id.sign_up_name);
-        final EditText signUpEmail = findViewById(R.id.sign_up_email);
-        final EditText signUpPassword = findViewById(R.id.sign_up_password);
+        signUpName = findViewById(R.id.sign_up_name);
+        signUpEmail = findViewById(R.id.sign_up_email);
+        signUpPassword = findViewById(R.id.sign_up_password);
         final Button signUpSubmitButton = findViewById(R.id.sign_up_submit_button);
         final Button goToLoginButton = findViewById(R.id.go_to_login_button);
-        emailErrorTextView = findViewById(R.id.sign_up_email_error);
-        passwordErrorTextView = findViewById(R.id.sign_up_password_error);
-        nameErrorTextView = findViewById(R.id.sign_up_name_error);
 
         progressBar = findViewById(R.id.signup_progressBar);
         progressBar.setVisibility(View.GONE);
@@ -47,9 +47,7 @@ public class SignUpActivity extends AppCompatActivity {
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
         signUpSubmitButton.setOnClickListener(view -> {
-            String email = signUpEmail.getText().toString();
-            String password = signUpPassword.getText().toString();
-            createCredentials(auth, signUpName, email, password);
+            createCredentials(auth);
         });
 
         goToLoginButton.setOnClickListener(view -> {
@@ -57,10 +55,15 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
-    private void createCredentials(FirebaseAuth auth, EditText signUpName, String email, String password) {
-        name = signUpName.getText().toString();
+    private void createCredentials(FirebaseAuth auth) {
+        name = signUpName.getEditText().getText().toString();
+        email = signUpEmail.getEditText().getText().toString();
+        password = signUpPassword.getEditText().getText().toString();
+
         if (!isSuccessValidation(name, email, password)) return;
+
         progressBar.setVisibility(View.VISIBLE);
+
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
@@ -68,10 +71,24 @@ public class SignUpActivity extends AppCompatActivity {
                         String id = dbRef.push().getKey();
 
                         dbRef.child(id).child("name").setValue(name);
+                        dbRef.child(id).child("email").setValue(email);
                         progressBar.setVisibility(View.GONE);
-                        goToLogin();
+
+                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                        intent.putExtra("NEW_USER", true);
+                        startActivity(intent);
+                        finish();
+
                     } else {
                         progressBar.setVisibility(View.GONE);
+                        AlertDialog alertDialog
+                                = new AlertDialog.Builder(SignUpActivity.this).create();
+                        alertDialog.setTitle("Error");
+                        alertDialog.setMessage("Please try again later!");
+                        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", ((dialogInterface, i) -> {
+                            //
+                        }));
+                        alertDialog.show();
                     }
                 });
     }
@@ -86,25 +103,28 @@ public class SignUpActivity extends AppCompatActivity {
         boolean result = true;
 
         if (Objects.isNull(name) || name.isEmpty()) {
-            nameErrorTextView.setHint("Name must not be blank");
+            signUpName.setError("Name must not be blank");
             result = false;
         } else {
-            nameErrorTextView.setHint(null);
+            signUpName.setError(null);
+            signUpName.setErrorEnabled(false);
         }
 
         if (Objects.isNull(email)
                 || email.isEmpty() || !FieldVerificationHelper.isEmailPatternValid(email)) {
-            emailErrorTextView.setHint("Invalid email");
+            signUpEmail.setError("Invalid email");
             result = false;
         } else {
-            emailErrorTextView.setHint(null);
+            signUpEmail.setError(null);
+            signUpEmail.setErrorEnabled(false);
         }
 
         if (Objects.isNull(password) || password.isEmpty()) {
-            passwordErrorTextView.setHint("Password must not be blank");
+            signUpPassword.setError("Password must not be blank");
             result = false;
         } else {
-            passwordErrorTextView.setHint(null);
+            signUpPassword.setError(null);
+            signUpPassword.setErrorEnabled(false);
         }
         return result;
     }

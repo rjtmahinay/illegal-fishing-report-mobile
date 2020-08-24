@@ -197,10 +197,8 @@ public class ReportActivity extends BaseNavigationActivity {
 
         File file = createTempFile(fileName, storageDir, type);
 
-        Log.i("STORAGE DIR", storageDir.getAbsolutePath());
-
         absoluteFilePath = file.getAbsolutePath();
-        Log.i("Current Photo/Video", absoluteFilePath);
+
         return file;
     }
 
@@ -266,6 +264,21 @@ public class ReportActivity extends BaseNavigationActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        Intent intent = getIntent();
+        boolean isReportSuccess
+                = intent.getBooleanExtra("REPORT_SUCCESS_SUBMISSION", false);
+
+        if (isReportSuccess) {
+            AlertDialog alertDialog = new AlertDialog.Builder(ReportActivity.this).create();
+            alertDialog.setTitle("Report Submitted");
+            alertDialog.setMessage("Your report has been successfully submitted, Thank you!");
+            alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Ok", ((dialogInterface, i) -> {
+                //
+            }));
+            alertDialog.show();
+            intent.removeExtra("REPORT_SUCCESS_SUBMISSION");
+        }
     }
 
     @Override
@@ -300,15 +313,12 @@ public class ReportActivity extends BaseNavigationActivity {
 
         if (requestCode == GALLERY_REQUEST_CODE && resultCode == RESULT_OK) {
             galleryDataPaths = new ArrayList<>();
-            Log.i("Gallery", "On Activity Result for Gallery");
-//            Log.i("1 file only", getPathFromUri(getApplicationContext(), data.getData()));
 
             intent.putExtra("isGallery", true);
             ClipData clipData = data.getClipData();
-            Log.i("ClipData", String.valueOf(clipData));
+
             if (Objects.nonNull(clipData)) {
                 for (int i = 0; i < clipData.getItemCount(); i++) {
-                    Log.i("Path from URI" + i, getPathFromUri(getApplicationContext(), clipData.getItemAt(i).getUri()));
                     galleryDataPaths.add(getPathFromUri(getApplicationContext(), clipData.getItemAt(i).getUri()));
                 }
 
@@ -335,7 +345,6 @@ public class ReportActivity extends BaseNavigationActivity {
             showGPSDialog();
         } else {
             isGPSEnabled = true;
-            Log.i("GPS is Enabled", "GPS is Enabled");
         }
     }
 

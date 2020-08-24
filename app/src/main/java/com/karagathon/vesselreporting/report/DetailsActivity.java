@@ -2,6 +2,7 @@ package com.karagathon.vesselreporting.report;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,7 +15,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -45,6 +45,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -78,7 +79,7 @@ public class DetailsActivity extends AppCompatActivity {
 
     private static final String UPLOAD_URL = "http://192.168.0.109:1331/upload";
     private static final int LOCATION_REQ_CODE = 3;
-    private EditText locationText, reportDescription;
+    private TextInputLayout reportDescriptionInput, locationTextInput;
     private Button submitButton;
     private Intent reportIntent;
     private HashMap<String, Object> dataMap;
@@ -87,7 +88,7 @@ public class DetailsActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
     private PlacesAutoCompletedAdapter adapter;
-    private AutoCompleteTextView autoCompleteTextView;
+    private AutoCompleteTextView locationText;
     private Date date;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
@@ -97,6 +98,8 @@ public class DetailsActivity extends AppCompatActivity {
     private boolean isGallery;
     private DateFormat dateFormat;
     private String userEmail;
+    private String location;
+    private String reportDescription;
 
 
     @Override
@@ -118,8 +121,8 @@ public class DetailsActivity extends AppCompatActivity {
 
         dateText = findViewById(R.id.date);
         submitButton = findViewById(R.id.submit);
-        locationText = findViewById(R.id.location);
-        reportDescription = findViewById(R.id.reportDescription);
+        locationTextInput = findViewById(R.id.locationInput);
+        reportDescriptionInput = findViewById(R.id.reportDescription);
         nameView = findViewById(R.id.name);
         detailsProgressBar = findViewById(R.id.detailsProgressBar);
         detailsProgressBar.setVisibility(View.GONE);
@@ -137,8 +140,8 @@ public class DetailsActivity extends AppCompatActivity {
 
         Places.initialize(getApplicationContext(), BuildConfig.GOOGLE_API_KEY);
 
-        autoCompleteTextView = findViewById(R.id.location);
-        autoCompleteTextView.setThreshold(3);
+        locationText = findViewById(R.id.location);
+        locationText.setThreshold(3);
 
         RectangularBounds bounds = RectangularBounds.newInstance(
                 new LatLng(4.588889, 116.65),
@@ -146,7 +149,7 @@ public class DetailsActivity extends AppCompatActivity {
 
         adapter = new PlacesAutoCompletedAdapter(getApplicationContext(), android.R.layout.simple_list_item_1, bounds);
 
-        autoCompleteTextView.setAdapter(adapter);
+        locationText.setAdapter(adapter);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         boolean isHideNameEnabled = sharedPreferences.getBoolean("hide_name", false);
@@ -160,11 +163,16 @@ public class DetailsActivity extends AppCompatActivity {
             reportIntent = getIntent();
             isGallery = reportIntent.getBooleanExtra("isGallery", false);
 
+            location = locationText.getText().toString();
+            reportDescription = reportDescriptionInput.getEditText().getText().toString();
+
+            if (!isSuccessValidation(location, reportDescription)) return;
+
             dataMap.put("name", nameView.getText().toString());
-            dataMap.put("location", autoCompleteTextView.getEditableText().toString());
+            dataMap.put("location", location);
             dataMap.put("date", dateText.getText().toString());
-            dataMap.put("description", reportDescription.getText().toString());
-//            detailsProgressBar.setVisibility(View.VISIBLE);
+            dataMap.put("description", reportDescription);
+            detailsProgressBar.setVisibility(View.VISIBLE);
             getLocation();
 
             if (isGallery) {
@@ -176,26 +184,13 @@ public class DetailsActivity extends AppCompatActivity {
             } else {
                 String absoluteFilePath = reportIntent.getStringExtra("absoluteFilePath");
 
-                Log.i("Details Absolute File Path", absoluteFilePath);
-
                 singleMediaFile = new File(absoluteFilePath);
                 dataMap.put("files", Arrays.asList(singleMediaFile.getName()));
 
                 uploadData(dataMap);
             }
 
-            retrieveEmail();
-            DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
-
-            String id = dbRef.push().getKey();
-            Report report
-                    = new Report(id, nameView.getText().toString(), locationText.getText().toString(),
-                    reportDescription.getText().toString(), userEmail, date);
-
-            Log.i("Details Date", String.valueOf(date));
-            dbRef.child(id).setValue(report);
-
-            goToReport();
+//            goToReport();
         });
 
     }
@@ -207,10 +202,8 @@ public class DetailsActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.i("Inside Permission Result", "Inside Permission Result");
-        Log.i("Grant Result", String.valueOf(grantResults[0]));
-        if (requestCode == LOCATION_REQ_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
-            Log.i("Inside Permission Condition", "Inside Permission Condition");
+
+        if (requestCode == LOCATION_REQ_CODE && grantResults[0] == PackageManager.PERMISSION_DENIED) {
             showLocationDialog();
         }
     }
@@ -226,7 +219,6 @@ public class DetailsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.i("On Destroy", "On Destroy");
 
         if (!isGallery && Objects.nonNull(singleMediaFile)) {
             singleMediaFile.delete();
@@ -249,16 +241,33 @@ public class DetailsActivity extends AppCompatActivity {
         Request request = new JsonObjectRequest(Request.Method.POST, UPLOAD_URL, new JSONObject(data),
                 response -> {
                     //empty
+                    retrieveEmail();
+                    DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
+
+                    String id = dbRef.push().getKey();
+                    Report report
+                            = new Report(id, nameView.getText().toString(), location,
+                            reportDescription, userEmail, date);
+
+                    dbRef.child(id).setValue(report);
+
                     detailsProgressBar.setVisibility(View.GONE);
-//                    goToReport();
+
+                    goToReport();
                 }, error -> {
-            Log.e("Request Error", String.valueOf(error));
             detailsProgressBar.setVisibility(View.GONE);
+
+            AlertDialog alertDialog = new AlertDialog.Builder(DetailsActivity.this).create();
+            alertDialog.setTitle("Error");
+            alertDialog.setMessage("Please try again later!");
+            alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Ok", ((dialogInterface, i) -> {
+                //
+            }));
+            alertDialog.show();
         });
 
         RequestQueue rQueue = Volley.newRequestQueue(getApplicationContext());
         rQueue.add(request);
-
     }
 
     private void processGalleryData(String[] galleryDataPaths) {
@@ -276,7 +285,6 @@ public class DetailsActivity extends AppCompatActivity {
 
         List<String> fileNames = new ArrayList<>(galleryDataPaths.length);
         for (String galleryPaths : galleryDataPaths) {
-            Log.i("Gallery Details Data", galleryPaths);
             file = new File(galleryPaths);
             fileNames.add(file.getName());
 //            storeFilesInObjectStorage(file.getName(), file);
@@ -297,12 +305,9 @@ public class DetailsActivity extends AppCompatActivity {
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQ_CODE);
         }
-        Log.i("Get Location", "Get Location");
         fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
             try {
                 Location location = task.getResult();
-                Log.i("location", String.valueOf(location));
-
 
                 if (Objects.nonNull(location)) {
                     isLastLocationNull = true;
@@ -317,10 +322,6 @@ public class DetailsActivity extends AppCompatActivity {
                     Log.i("Details Activity Longitude", String.valueOf(address.get(0).getLongitude()));
 
                 } else {
-//                    Uri gmmIntentUri = Uri.parse("geo:12.8797, 121.7740");
-//
-//                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-//                    startActivity(mapIntent);
 
                     locationRequest = LocationRequest.create();
                     locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -347,7 +348,6 @@ public class DetailsActivity extends AppCompatActivity {
                             }
                         }
                     };
-                    Log.i("CALL", "Request Location");
                     fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                 }
             } catch (Exception e) {
@@ -373,6 +373,7 @@ public class DetailsActivity extends AppCompatActivity {
 
     private void goToReport() {
         Intent reportIntent = new Intent(getApplicationContext(), ReportActivity.class);
+        reportIntent.putExtra("REPORT_SUCCESS_SUBMISSION", true);
         startActivity(reportIntent);
     }
 
@@ -395,16 +396,14 @@ public class DetailsActivity extends AppCompatActivity {
             nameView.setText(currentUser.getDisplayName());
             return;
         }
-        Log.i("Retrieve name", "Retrieve name");
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("User");
-
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 snapshot.getChildren().forEach(dataSnapshot -> {
                     Map<String, Object> userMap = (Map<String, Object>) dataSnapshot.getValue();
                     Map.Entry<String, Object> entry = userMap.entrySet().iterator().next();
-                    Log.i("Details Navigation User Value", String.valueOf(entry.getValue()));
+
                     nameView.setText(String.valueOf(entry.getValue()));
                 });
             }
@@ -418,7 +417,6 @@ public class DetailsActivity extends AppCompatActivity {
 
     private void retrieveEmail() {
         currentUser.getProviderData().forEach(u -> {
-            Log.i("Base Navigation Provider ID", u.getProviderId());
 
             switch (u.getProviderId()) {
                 case "google.com":
@@ -452,4 +450,27 @@ public class DetailsActivity extends AppCompatActivity {
         request.setParameters(parameters);
         request.executeAsync();
     }
+
+    private boolean isSuccessValidation(String location, String reportDescription) {
+        boolean result = true;
+
+        if (Objects.isNull(location) || location.isEmpty()) {
+            locationTextInput.setError("Location must not be blank");
+            result = false;
+        } else {
+            locationTextInput.setError(null);
+            locationTextInput.setErrorEnabled(false);
+        }
+
+        if (Objects.isNull(reportDescription) || reportDescription.isEmpty()) {
+            reportDescriptionInput.setError("Description must not be blank");
+            result = false;
+        } else {
+            reportDescriptionInput.setError(null);
+            reportDescriptionInput.setErrorEnabled(false);
+        }
+
+        return result;
+    }
+
 }

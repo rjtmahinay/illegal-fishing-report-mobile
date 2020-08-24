@@ -64,7 +64,6 @@ public class HistoryActivity extends AppCompatActivity {
 
         listView.setOnItemClickListener((parent, view, pos, id) -> {
             String strings = parent.getItemAtPosition(pos).toString();
-            Log.i("Item", strings);
         });
     }
 
@@ -88,7 +87,6 @@ public class HistoryActivity extends AppCompatActivity {
                                 = (map1, map2) -> map1.get("id").compareTo(map2.get("id"));
 
                         dataList.sort(comparator.reversed());
-                        Log.i("Data List", dataList.toString());
 
                         SimpleAdapter adapter = new SimpleAdapter(getApplicationContext(), dataList, R.layout.history_list_items,
                                 new String[]{"location", "formattedParsedDate"}, new int[]{R.id.history_list_text_1, R.id.history_list_text_2});
@@ -116,8 +114,6 @@ public class HistoryActivity extends AppCompatActivity {
                 && Objects.nonNull(location) && !location.isEmpty()) {
 
             formattedParsedDate = dateFormat.format(formattedDate);
-            Log.i("Parse Date", formattedParsedDate);
-            Log.i("Location", location);
 
             historyMap.put("id", id);
             historyMap.put("location", location);

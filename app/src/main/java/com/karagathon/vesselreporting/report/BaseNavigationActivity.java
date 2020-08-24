@@ -95,13 +95,11 @@ public class BaseNavigationActivity extends AppCompatActivity
 
         switch (itemId) {
             case R.id.item_history:
-                Log.i("Item History", "Item History");
                 Intent historyIntent =
                         new Intent(BaseNavigationActivity.this, HistoryActivity.class);
                 startActivity(historyIntent);
                 break;
             case R.id.item_settings:
-                Log.i("Item Settings", "Item Settings");
                 Intent settingsIntent = new Intent(BaseNavigationActivity.this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 break;
@@ -140,13 +138,8 @@ public class BaseNavigationActivity extends AppCompatActivity
             Intent signInIntent = new Intent(BaseNavigationActivity.this, LoginActivity.class);
             startActivity(signInIntent);
         });
+
         user.getProviderData().forEach(u -> {
-            Log.i("User Info", u.getProviderId());
-            Log.i("User Info", u.getUid());
-//                Log.i("User Info", u.getEmail());
-        });
-        user.getProviderData().forEach(u -> {
-            Log.i("Base Navigation Provider ID", u.getProviderId());
 
             switch (u.getProviderId()) {
                 case "google.com":
@@ -155,7 +148,6 @@ public class BaseNavigationActivity extends AppCompatActivity
                             .load(account.getPhotoUrl())
                             .placeholder(R.drawable.ic_person)
                             .into(image);
-                    Log.i("Google Email", account.getEmail());
                     navDisplayName.setText(account.getDisplayName());
                     navDisplayEmail.setText(account.getEmail());
                     break;
@@ -164,22 +156,20 @@ public class BaseNavigationActivity extends AppCompatActivity
                     requestData();
                     break;
                 case "password":
-                    retrieveName();
+                    retrieveName(user.getEmail());
                     navDisplayEmail.setText(user.getEmail());
             }
         });
     }
 
-    private void retrieveName() {
-        Log.i("Base Navigation Inside Retrieve Name", "Base Navigation Inside Retrieve Name");
+    private void retrieveName(String userEmail) {
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("User");
-        dbRef.addValueEventListener(new ValueEventListener() {
+        dbRef.orderByChild("email").equalTo(userEmail).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 snapshot.getChildren().forEach(dataSnapshot -> {
                     Map<String, Object> userMap = (Map<String, Object>) dataSnapshot.getValue();
                     Map.Entry<String, Object> entry = userMap.entrySet().iterator().next();
-                    Log.i("Base Navigation User Value", String.valueOf(entry.getValue()));
 
                     navDisplayName.setText(String.valueOf(entry.getValue()));
                 });

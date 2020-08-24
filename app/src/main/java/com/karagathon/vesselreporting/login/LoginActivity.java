@@ -1,14 +1,13 @@
 package com.karagathon.vesselreporting.login;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -25,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -48,9 +48,7 @@ public class LoginActivity extends AppCompatActivity {
     private String FACEBOOK_TAG = "Facebook Authentication";
     private AccessTokenTracker accessTokenTracker;
     private ProgressBar progressBar;
-    private EditText emailText;
-    private EditText passwordText;
-    private TextView emailErrorText, passwordErrorText;
+    private TextInputLayout emailText, passwordText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,8 +66,6 @@ public class LoginActivity extends AppCompatActivity {
 
         emailText = findViewById(R.id.login_email);
         passwordText = findViewById(R.id.login_password);
-        emailErrorText = findViewById(R.id.email_error_view);
-        passwordErrorText = findViewById(R.id.password_error_view);
 
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
@@ -104,10 +100,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private void signInUsingEmailPassword(Button goButton) {
 
-
         goButton.setOnClickListener(view -> {
-            String email = emailText.getText().toString();
-            String password = passwordText.getText().toString();
+            String email = emailText.getEditText().getText().toString();
+            String password = passwordText.getEditText().getText().toString();
 
             if (!isSuccessValidation(email, password))
                 return;
@@ -124,8 +119,8 @@ public class LoginActivity extends AppCompatActivity {
                     alertDialog.setMessage("Email or password is incorrect");
                     alertDialog.show();
 
-                    emailText.setText(null);
-                    passwordText.setText(null);
+                    emailText.getEditText().setText(null);
+                    passwordText.getEditText().setText(null);
                 }
             });
         });
@@ -156,7 +151,7 @@ public class LoginActivity extends AppCompatActivity {
             }
             @Override
             public void onCancel() {
-                Log.i(FACEBOOK_TAG, "Cancel");
+                //
             }
 
             @Override
@@ -170,8 +165,25 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         FirebaseUser user = auth.getCurrentUser();
-        if (Objects.nonNull(user)) {
+        Intent intent = getIntent();
+        boolean isNewUser = intent.getBooleanExtra("NEW_USER", false);
+        if (Objects.nonNull(user) && !isNewUser) {
             goToReport();
+        } else {
+            intent.removeExtra("NEW_USER");
+        }
+
+        boolean isResetPasswordSuccess
+                = intent.getBooleanExtra("RESET_PASSWORD_SUCCESS", false);
+
+        if (isResetPasswordSuccess) {
+            AlertDialog alertDialog = new AlertDialog.Builder(LoginActivity.this).create();
+            alertDialog.setMessage("Reset Passsword Sucessfully!");
+            alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", ((dialogInterface, i) -> {
+                //
+            }));
+            alertDialog.show();
+            intent.removeExtra("RESET_PASSWORD_SUCCESS");
         }
     }
 
@@ -250,23 +262,27 @@ public class LoginActivity extends AppCompatActivity {
         boolean result = true;
         if (Objects.isNull(email)
                 || email.isEmpty() || !FieldVerificationHelper.isEmailPatternValid(email)) {
-            emailErrorText.setHint("Invalid email");
+            emailText.setError("Invalid email");
             result = false;
         } else {
-            emailErrorText.setHint(null);
+            emailText.setError(null);
+            emailText.setErrorEnabled(false);
         }
 
         if (Objects.isNull(password) || password.isEmpty()) {
-            passwordErrorText.setHint("Password must not be blank");
+            passwordText.setError("Password must not be blank");
             result = false;
         } else {
-            passwordErrorText.setHint(null);
+            passwordText.setError(null);
+            passwordText.setErrorEnabled(false);
         }
         return result;
     }
 
     private void removeErrorMessage() {
-        emailErrorText.setHint(null);
-        passwordErrorText.setHint(null);
+        emailText.setError(null);
+        emailText.setErrorEnabled(false);
+        passwordText.setError(null);
+        passwordText.setErrorEnabled(false);
     }
 }
