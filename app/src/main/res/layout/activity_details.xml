@@ -13,7 +13,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:contentDescription="logo"
-        android:src="@drawable/report" />
+        android:src="@drawable/cloud_computing" />
 
     <TextView
         android:id="@+id/details_up_text_view"

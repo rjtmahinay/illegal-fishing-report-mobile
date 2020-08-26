@@ -11,12 +11,12 @@
 
     <ImageView
         android:id="@+id/signup_splash_logo"
-        android:layout_width="103dp"
-        android:layout_height="77dp"
+        android:layout_width="106dp"
+        android:layout_height="81dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:contentDescription="logo"
-        android:src="@drawable/report" />
+        android:src="@drawable/cloud_computing" />
 
     <TextView
         android:id="@+id/sign_up_text_view"

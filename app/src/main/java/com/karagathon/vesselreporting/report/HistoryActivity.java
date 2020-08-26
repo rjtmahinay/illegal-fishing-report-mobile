@@ -28,7 +28,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -54,7 +58,7 @@ public class HistoryActivity extends AppCompatActivity {
         dataList = new ArrayList<>();
         listView = findViewById(R.id.history_list);
 
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        dateFormat = new SimpleDateFormat("d-M-yyyy", Locale.getDefault());
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         progressBar = findViewById(R.id.history_progressbar);
@@ -107,7 +111,17 @@ public class HistoryActivity extends AppCompatActivity {
         String id = report.getId();
         String location = report.getLocation();
         Date formattedDate = report.getDate();
+        LocalDate localDate = convertToLocalDateViaMilisecond(formattedDate);
 
+        String format = "%d-0%d-%d";
+        if (Objects.nonNull(localDate) && localDate.getMonth().getValue() < 10) {
+            try {
+                formattedDate = dateFormat.parse(String.format(Locale.getDefault(),
+                        format, localDate.getDayOfMonth(), localDate.getMonth().getValue(), localDate.getYear()));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
         Map<String, String> historyMap = new HashMap<>();
 
         if (Objects.nonNull(formattedDate)
@@ -157,5 +171,11 @@ public class HistoryActivity extends AppCompatActivity {
         parameters.putString("fields", "email");
         request.setParameters(parameters);
         request.executeAsync();
+    }
+
+    private LocalDate convertToLocalDateViaMilisecond(Date dateToConvert) {
+        return Instant.ofEpochMilli(dateToConvert.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
     }
 }

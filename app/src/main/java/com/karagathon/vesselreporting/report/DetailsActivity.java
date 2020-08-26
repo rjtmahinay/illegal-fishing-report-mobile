@@ -100,7 +100,7 @@ public class DetailsActivity extends AppCompatActivity {
     private String userEmail;
     private String location;
     private String reportDescription;
-
+    private int storeFileToCloudFail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +128,7 @@ public class DetailsActivity extends AppCompatActivity {
         detailsProgressBar.setVisibility(View.GONE);
 
         dataMap = new HashMap<>();
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        dateFormat = new SimpleDateFormat("d-M-yyyy", Locale.getDefault());
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         auth = FirebaseAuth.getInstance();
@@ -173,24 +173,22 @@ public class DetailsActivity extends AppCompatActivity {
             dataMap.put("date", dateText.getText().toString());
             dataMap.put("description", reportDescription);
             detailsProgressBar.setVisibility(View.VISIBLE);
-            getLocation();
 
             if (isGallery) {
                 String[] galleryDataPaths = reportIntent.getStringArrayExtra("galleryDataPaths");
 
                 processGalleryData(galleryDataPaths);
-                uploadData(dataMap);
 
             } else {
                 String absoluteFilePath = reportIntent.getStringExtra("absoluteFilePath");
 
                 singleMediaFile = new File(absoluteFilePath);
                 dataMap.put("files", Arrays.asList(singleMediaFile.getName()));
-
-                uploadData(dataMap);
+                storeFilesInObjectStorage(absoluteFilePath, singleMediaFile);
             }
 
-//            goToReport();
+            uploadDataAndLocation();
+
         });
 
     }
@@ -227,47 +225,54 @@ public class DetailsActivity extends AppCompatActivity {
         reportIntent = null;
         dataMap = null;
 
-        try {
-            Amplify.removePlugin(new AWSCognitoAuthPlugin());
-            Amplify.removePlugin(new AWSS3StoragePlugin());
-        } catch (AmplifyException e) {
-            e.printStackTrace();
-        }
-
     }
 
-    private void uploadData(Map data) {
+    private void uploadData(Map<String, Object> data) {
 
-        Request request = new JsonObjectRequest(Request.Method.POST, UPLOAD_URL, new JSONObject(data),
-                response -> {
-                    //empty
-                    retrieveEmail();
-                    DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
-
-                    String id = dbRef.push().getKey();
-                    Report report
-                            = new Report(id, nameView.getText().toString(), location,
-                            reportDescription, userEmail, date);
-
-                    dbRef.child(id).setValue(report);
-
-                    detailsProgressBar.setVisibility(View.GONE);
-
-                    goToReport();
-                }, error -> {
-            detailsProgressBar.setVisibility(View.GONE);
-
-            AlertDialog alertDialog = new AlertDialog.Builder(DetailsActivity.this).create();
-            alertDialog.setTitle("Error");
-            alertDialog.setMessage("Please try again later!");
-            alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Ok", ((dialogInterface, i) -> {
-                //
-            }));
-            alertDialog.show();
-        });
+        if (storeFileToCloudFail == 1) {
+            storeFileToCloudFail = 0;
+            genericErrorDialog();
+            return;
+        }
 
         RequestQueue rQueue = Volley.newRequestQueue(getApplicationContext());
+        Request request = new JsonObjectRequest(Request.Method.POST, UPLOAD_URL, new JSONObject(data),
+                response -> {
+                    Log.i("Response", "Response");
+                    //empty
+                }, error -> {
+            //empty
+            for (StackTraceElement elem : error.getStackTrace()) {
+                Log.e("Error", String.valueOf(elem));
+            }
+        });
+
         rQueue.add(request);
+
+        retrieveEmail();
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("Report");
+
+        String id = dbRef.push().getKey();
+        Report report
+                = new Report(id, nameView.getText().toString(), location,
+                reportDescription, userEmail, date);
+
+        dbRef.child(id).setValue(report);
+
+        detailsProgressBar.setVisibility(View.GONE);
+
+        goToReport();
+    }
+
+    private void genericErrorDialog() {
+        detailsProgressBar.setVisibility(View.GONE);
+        AlertDialog alertDialog = new AlertDialog.Builder(DetailsActivity.this).create();
+        alertDialog.setTitle("Error");
+        alertDialog.setMessage("Please try again later!");
+        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Ok", ((dialogInterface, i) -> {
+            //
+        }));
+        alertDialog.show();
     }
 
     private void processGalleryData(String[] galleryDataPaths) {
@@ -279,7 +284,7 @@ public class DetailsActivity extends AppCompatActivity {
             file = new File(gallerySingleDataPath);
 
             dataMap.put("files", Arrays.asList(file.getName()));
-//            storeFilesInObjectStorage(file.getName(), file);
+            storeFilesInObjectStorage(file.getName(), file);
             return;
         }
 
@@ -287,7 +292,7 @@ public class DetailsActivity extends AppCompatActivity {
         for (String galleryPaths : galleryDataPaths) {
             file = new File(galleryPaths);
             fileNames.add(file.getName());
-//            storeFilesInObjectStorage(file.getName(), file);
+            storeFilesInObjectStorage(file.getName(), file);
         }
 
         dataMap.put("files", fileNames);
@@ -296,11 +301,14 @@ public class DetailsActivity extends AppCompatActivity {
     private void storeFilesInObjectStorage(String fileName, File file) {
         Amplify.Storage.uploadFile(fileName, file, result ->
                         Log.i("MyAmplifyApp", "Successfully uploaded: " + result.getKey()),
-                storageFailure -> Log.e("MyAmplifyApp", "Upload failed", storageFailure));
+                storageFailure -> {
+                    Log.e("MyAmplifyApp", "Upload failed", storageFailure);
+                    storeFileToCloudFail = 1;
+                });
     }
 
 
-    private void getLocation() {
+    private void uploadDataAndLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQ_CODE);
@@ -320,6 +328,8 @@ public class DetailsActivity extends AppCompatActivity {
 
                     Log.i("Details Activity Latitude", String.valueOf(address.get(0).getLatitude()));
                     Log.i("Details Activity Longitude", String.valueOf(address.get(0).getLongitude()));
+
+                    uploadData(dataMap);
 
                 } else {
 
@@ -346,6 +356,8 @@ public class DetailsActivity extends AppCompatActivity {
                                     break;
                                 }
                             }
+
+                            uploadData(dataMap);
                         }
                     };
                     fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
@@ -382,8 +394,12 @@ public class DetailsActivity extends AppCompatActivity {
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         int month = calendar.get(Calendar.MONTH);
         int year = calendar.get(Calendar.YEAR);
-
-        dateText.setText(String.format(Locale.getDefault(), "%d-%d-%d", year, month + 1, day));
+        String format = "%d-%d-%d";
+        month += 1;
+        if (month < 10) {
+            format = "%d-0%d-%d";
+        }
+        dateText.setText(String.format(Locale.getDefault(), format, day, month, year));
         try {
             date = dateFormat.parse(dateText.getText().toString());
         } catch (ParseException e) {
