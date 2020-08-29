@@ -113,7 +113,6 @@ public class DetailsActivity extends AppCompatActivity {
                 Amplify.addPlugin(new AWSS3StoragePlugin());
                 Amplify.configure(getApplicationContext());
 
-                Log.i("MyAmplifyApp", "Initialized Amplify");
             } catch (AmplifyException e) {
                 e.printStackTrace();
             }
@@ -331,9 +330,6 @@ public class DetailsActivity extends AppCompatActivity {
                     dataMap.put("latitude", address.get(0).getLatitude());
                     dataMap.put("longitude", address.get(0).getLongitude());
 
-                    Log.i("Details Activity Latitude", String.valueOf(address.get(0).getLatitude()));
-                    Log.i("Details Activity Longitude", String.valueOf(address.get(0).getLongitude()));
-
                     uploadData(dataMap);
 
                 } else {
@@ -344,17 +340,9 @@ public class DetailsActivity extends AppCompatActivity {
                     locationCallback = new LocationCallback() {
                         @Override
                         public void onLocationResult(LocationResult locationResult) {
-                            if (Objects.isNull(locationResult)) {
-                                Log.i("Details Location Result Null", String.valueOf(locationResult));
-                            }
 
                             for (Location location : locationResult.getLocations()) {
                                 if (Objects.nonNull(location)) {
-                                    Log.i("Details Location Result Not Null", String.valueOf(location));
-
-                                    Log.i("Details Activity Request Latitude", String.valueOf(location.getLatitude()));
-                                    Log.i("Details Activity Request Longitude", String.valueOf(location.getLongitude()));
-                                    Log.i("Details Activity Request Accuracy", String.valueOf(location.getAccuracy()));
 
                                     dataMap.put("latitude", location.getLatitude());
                                     dataMap.put("longitude", location.getLongitude());
