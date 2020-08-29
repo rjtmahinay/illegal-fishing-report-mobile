@@ -19,7 +19,7 @@ Target SDK Version - 30 (Android 10)
 * Integration of application to cloud platforms (Firebase, Google Cloud and AWS)
 
 ## Detailed Information
-[Documentation](https://github.com/rjtmahinay/illegal-fishing-report-mobile/blob/master/details/README.md)
+[Documentation](https://github.com/rjtmahinay/illegal-fishing-report-mobile/blob/master/details/README.md) - Consist of user interfaces and explanation of the application
 
 ## Installation
 ### Install the APK
