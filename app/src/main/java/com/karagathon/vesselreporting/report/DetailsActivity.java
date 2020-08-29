@@ -183,8 +183,9 @@ public class DetailsActivity extends AppCompatActivity {
                 String absoluteFilePath = reportIntent.getStringExtra("absoluteFilePath");
 
                 singleMediaFile = new File(absoluteFilePath);
+
                 dataMap.put("files", Arrays.asList(singleMediaFile.getName()));
-                storeFilesInObjectStorage(absoluteFilePath, singleMediaFile);
+                storeFilesInObjectStorage(singleMediaFile.getName(), singleMediaFile);
             }
 
             uploadDataAndLocation();
@@ -238,7 +239,11 @@ public class DetailsActivity extends AppCompatActivity {
         RequestQueue rQueue = Volley.newRequestQueue(getApplicationContext());
         Request request = new JsonObjectRequest(Request.Method.POST, UPLOAD_URL, new JSONObject(data),
                 response -> {
-                    Log.i("Response", "Response");
+                    try {
+                        Log.i("Response", response.getString("action"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     //empty
                 }, error -> {
             //empty

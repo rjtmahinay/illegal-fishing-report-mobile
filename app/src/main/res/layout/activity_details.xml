@@ -1,134 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".report.DetailsActivity">
 
-    <ImageView
-        android:id="@+id/details_splash_logo"
-        android:layout_width="99dp"
-        android:layout_height="71dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:contentDescription="logo"
-        android:src="@drawable/cloud_computing" />
-
-    <TextView
-        android:id="@+id/details_up_text_view"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/details_splash_logo"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="54dp"
-        android:layout_marginBottom="-35dp"
-        android:fontFamily="@font/product_sans_regular"
-        android:text="OReport"
-        android:textAlignment="center"
-        android:textSize="20sp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="330dp"
-        android:layout_alignTop="@id/details_up_text_view"
-        android:layout_centerVertical="true"
-        android:layout_marginTop="40dp">
+        android:layout_height="wrap_content">
 
         <LinearLayout
-
-            android:layout_width="338dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/name"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:gravity="center"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:textSize="15sp"
-                app:drawableStartCompat="@drawable/ic_person" />
-
+            <ImageView
+                android:id="@+id/details_splash_logo"
+                android:layout_width="99dp"
+                android:layout_height="71dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:contentDescription="logo"
+                android:src="@drawable/cloud_computing" />
 
             <TextView
-                android:id="@+id/date"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:textSize="15sp"
-                app:drawableStartCompat="@drawable/ic_calendar" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/locationInput"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:id="@+id/details_up_text_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Location"
-                android:paddingStart="10dp"
-                android:layout_marginBottom="5dp"
-                android:paddingEnd="10dp"
-                app:errorEnabled="true"
-                app:errorIconDrawable="@null">
-
-                <AutoCompleteTextView
-                    android:id="@+id/location"
-                    android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:drawableStart="@drawable/ic_location"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
-                    android:textSize="15sp" />
-
-            </com.google.android.material.textfield.TextInputLayout>
+                android:layout_alignBottom="@id/details_splash_logo"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="54dp"
+                android:layout_marginBottom="-35dp"
+                android:fontFamily="@font/product_sans_regular"
+                android:text="OReport"
+                android:textAlignment="center"
+                android:textSize="20sp" />
 
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/reportDescription"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:hint="Description"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                app:errorEnabled="true"
-                app:errorIconDrawable="@null">
+                android:layout_height="330dp"
+                android:layout_alignTop="@id/details_up_text_view"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="40dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="95dp"
-                    android:drawableStart="@drawable/ic_description"
-                    android:inputType="textMultiLine"
-                    android:lines="4"
-                    android:textSize="15sp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                <LinearLayout
+
+                    android:layout_width="338dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/name"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:gravity="center"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:textSize="15sp"
+                        app:drawableStartCompat="@drawable/ic_person" />
+
+
+                    <TextView
+                        android:id="@+id/date"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:gravity="center"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:textSize="15sp"
+                        app:drawableStartCompat="@drawable/ic_calendar" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/locationInput"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:hint="Location"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        app:errorEnabled="true"
+                        app:errorIconDrawable="@null">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/location"
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            android:drawableStart="@drawable/ic_location"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            android:textSize="15sp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/reportDescription"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:hint="Description"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        app:errorEnabled="true"
+                        app:errorIconDrawable="@null">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="95dp"
+                            android:drawableStart="@drawable/ic_description"
+                            android:inputType="textMultiLine"
+                            android:lines="4"
+                            android:textSize="15sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/submit"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="20dp"
+                android:background="@color/colorOceanBlue"
+                android:text="Submit"
+                android:textColor="@color/quantum_white_100"
+                android:textSize="12.5sp" />
+
 
         </LinearLayout>
-    </LinearLayout>
 
-    <Button
-        android:id="@+id/submit"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="20dp"
-        android:background="@color/colorOceanBlue"
-        android:text="Submit"
-        android:textColor="@color/quantum_white_100"
-        android:textSize="12.5sp" />
-
-    <ProgressBar
-        android:id="@+id/detailsProgressBar"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:indeterminate="true" />
-
-</RelativeLayout>
+        <ProgressBar
+            android:id="@+id/detailsProgressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:indeterminate="true" />
+    </RelativeLayout>
+</ScrollView>
