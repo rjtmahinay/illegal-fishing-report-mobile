@@ -77,7 +77,7 @@ import java.util.Objects;
 
 public class DetailsActivity extends AppCompatActivity {
 
-    private static final String UPLOAD_URL = "http://192.168.0.109:1331/upload";
+    private static final String UPLOAD_URL = "http://vesselreportingtrackingsystem-env.eba-i2a8ukb5.ap-southeast-1.elasticbeanstalk.com/upload";
     private static final int LOCATION_REQ_CODE = 3;
     private TextInputLayout reportDescriptionInput, locationTextInput;
     private Button submitButton;
@@ -315,6 +315,7 @@ public class DetailsActivity extends AppCompatActivity {
     private void uploadDataAndLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            detailsProgressBar.setVisibility(View.GONE);
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQ_CODE);
         }
         fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
