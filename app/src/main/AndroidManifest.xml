@@ -35,7 +35,7 @@
             android:name=".login.SignUpActivity"
             android:label="@string/title_signup_activity"
             android:parentActivityName=".login.LoginActivity"
-            android:theme="@style/LoginTheme" />
+            android:theme="@style/SignUpTheme" />
         <activity
             android:name=".common.SettingsActivity"
             android:label="@string/title_activity_settings"

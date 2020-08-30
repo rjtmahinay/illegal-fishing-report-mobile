@@ -1,5 +1,10 @@
 <resources>
 
+    <style name="SignUpTheme" parent="@style/Theme.MaterialComponents.Light.DarkActionBar.Bridge">
+        <item name="colorPrimary">@color/colorOceanBlue</item>
+        <item name="android:indeterminateTint">@color/progressBarColor</item>
+    </style>
+
     <style name="ForgotPasswordTheme" parent="@style/Theme.MaterialComponents.Light.DarkActionBar.Bridge">
         <item name="colorPrimary">@color/colorOceanBlue</item>
         <item name="android:indeterminateTint">@color/progressBarColor</item>
