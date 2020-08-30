@@ -13,13 +13,14 @@ Target SDK Version - 30 (Android 10)
 <img src="https://github.com/rjtmahinay/illegal-fishing-report-mobile/blob/master/ui/splash.jpg" width="200"> <img src="https://github.com/rjtmahinay/illegal-fishing-report-mobile/blob/master/ui/login.jpg" width="200"> <img src="https://github.com/rjtmahinay/illegal-fishing-report-mobile/blob/master/ui/report.jpg" width="200">
 
 
-## Feature
+## Features
 * Image/Video capture of illegal fishing events as seen by user
 * Send images/videos, location and description details to the reporting and tracking system via REST
 * Integration of application to cloud platforms (Firebase, Google Cloud and AWS)
 
 ## Detailed Information
-[Documentation](https://github.com/rjtmahinay/illegal-fishing-report-mobile/blob/master/details/README.md) - Consist of user interfaces and explanation of the application
+* [Documentation](https://github.com/rjtmahinay/illegal-fishing-report-mobile/blob/master/details/README.md) - Consist of user interfaces and explanation of the application
+* [Powerpoint](https://1drv.ms/p/s!ApZExzU1v69ym0jVJOq3lIMn26ni?e=rpaeEJ)
 
 ## Installation
 ### Install the APK
