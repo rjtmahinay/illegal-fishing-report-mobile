@@ -23,5 +23,8 @@ Target SDK Version - 30 (Android 10)
 
 ## Installation
 ### Install the APK
+Upon install, proceed with Install Anyway
+
 [OReport APK](https://github.com/rjtmahinay/illegal-fishing-report-mobile/blob/master/apk/oreport1.0.apk)
+
 
