@@ -1,6 +1,6 @@
 # OReport
 
-*Mobile Application for image/video capture for Karagathon 2020*
+*An entry for 1st Karagathon 2020. A mobile application for image/video capture in illegal fishing and maritime violations.*
 
 ## Details
 ```
