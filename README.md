@@ -15,7 +15,7 @@ Target SDK Version - 30 (Android 10)
 
 ## Feature
 * Image/Video capture of illegal fishing events as seen by user
-* Send location and description details to the reporting and tracking system via REST
+* Send images/videos, location and description details to the reporting and tracking system via REST
 * Integration of application to cloud platforms (Firebase, Google Cloud and AWS)
 
 ## Detailed Information
