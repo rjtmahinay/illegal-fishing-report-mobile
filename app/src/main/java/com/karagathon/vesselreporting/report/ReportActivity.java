@@ -20,7 +20,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -231,7 +230,6 @@ public class ReportActivity extends BaseNavigationActivity {
 //        image = findViewById(R.id.imageView);
 
         photoCaptureButton.setOnClickListener(view -> {
-            Toast.makeText(ReportActivity.this, "Button for photo is clicked", Toast.LENGTH_LONG).show();
             flag = 1;
             checkGPSIsEnabled();
             if (isGPSEnabled) {
@@ -241,7 +239,6 @@ public class ReportActivity extends BaseNavigationActivity {
         });
 
         videoCaptureButton.setOnClickListener(view -> {
-            Toast.makeText(ReportActivity.this, "Button for video is clicked", Toast.LENGTH_LONG).show();
             checkGPSIsEnabled();
             flag = 2;
             if (isGPSEnabled) {
@@ -304,7 +301,6 @@ public class ReportActivity extends BaseNavigationActivity {
         Intent intent = new Intent(ReportActivity.this, DetailsActivity.class);
 
         if (requestCode == MEDIA_REQUEST_CODE && resultCode == RESULT_OK) {
-            Toast.makeText(ReportActivity.this, "On Activity Result", Toast.LENGTH_LONG).show();
             intent.putExtra("isGallery", false);
             intent.putExtra("absoluteFilePath", absoluteFilePath);
 
