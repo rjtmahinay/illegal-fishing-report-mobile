@@ -28,3 +28,7 @@ Upon install, proceed with Install Anyway
 [OReport APK](https://github.com/rjtmahinay/illegal-fishing-report-mobile/blob/master/apk/oreport1.0.apk)
 
 
+## License
+License under this hackathon
+
+<a rel="license" href="http://creativecommons.org/licenses/by/3.0/ph/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/ph/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/ph/">Creative Commons Attribution 3.0 Philippines License</a>.
